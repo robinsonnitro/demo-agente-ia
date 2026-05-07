@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Demo Agente IA — AgenciaComercial.ai</title>
+<meta name="description" content="Prueba gratis un agente IA para tu negocio. Selecciona tu rubro y chatea en vivo.">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#070a11;--t1:#f0f2f5;--t2:rgba(240,242,245,0.6);--t3:rgba(240,242,245,0.35);--border:rgba(255,255,255,0.06);--card:rgba(255,255,255,0.02);--cyan:#00e5ff;--mag:#ff2d7b;--vio:#7c3aed;--green:#22c55e;--amber:#f59e0b;--grad:linear-gradient(135deg,#00e5ff,#7c3aed 50%,#ff2d7b)}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);height:100vh;height:100dvh;overflow:hidden}
+
+/* SELECTOR */
+#selector{height:100%;display:flex;align-items:center;justify-content:center;padding:20px}
+.sel-inner{max-width:580px;width:100%;display:flex;flex-direction:column;align-items:center}
+.sel-icon{font-size:48px;margin-bottom:16px;background:linear-gradient(135deg,rgba(0,229,255,0.1),rgba(124,58,237,0.1));width:80px;height:80px;border-radius:20px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border)}
+.sel-title{font-size:clamp(22px,5vw,28px);font-weight:900;text-align:center;letter-spacing:-0.02em;line-height:1.1;margin-bottom:10px}
+.sel-sub{font-size:14px;color:var(--t3);text-align:center;max-width:400px;line-height:1.6;margin-bottom:32px}
+.ind-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%}
+@media(max-width:480px){.ind-grid{grid-template-columns:repeat(2,1fr)}}
+.ind-btn{display:flex;flex-direction:column;align-items:center;gap:6px;padding:22px 12px;border-radius:16px;background:var(--card);border:1px solid var(--border);cursor:pointer;transition:all .3s cubic-bezier(.16,1,.3,1);font-family:'Outfit',sans-serif;animation:slideUp .4s ease both}
+.ind-btn:hover{transform:translateY(-4px)}
+.ind-btn .em{font-size:32px}.ind-btn .nm{font-weight:700;font-size:14px;color:var(--t1)}.ind-btn .ds{font-size:11px;color:var(--t3)}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
+
+/* CHAT */
+#chat{height:100%;display:none;flex-direction:column}
+#chat.active{display:flex}
+.ch-head{display:flex;align-items:center;gap:12px;padding:12px 16px;background:rgba(255,255,255,0.02);border-bottom:1px solid var(--border)}
+.ch-back{background:none;border:none;color:var(--cyan);font-size:20px;cursor:pointer;padding:4px 8px;font-family:'Outfit'}
+.ch-avatar{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;border:1.5px solid;font-size:20px}
+.ch-info{flex:1}
+.ch-name{font-weight:700;font-size:14px}.ch-status{font-size:11px;color:#25d366;display:flex;align-items:center;gap:4px}
+.ch-status::before{content:'';width:6px;height:6px;border-radius:50%;background:#25d366;display:inline-block}
+.ch-brand{font-size:10px;color:rgba(240,242,245,0.2);text-align:right;line-height:1.4}
+
+.ch-body{flex:1;overflow-y:auto;padding:16px 16px 8px;display:flex;flex-direction:column;gap:8px}
+.ch-notice{text-align:center;padding:8px 16px;border-radius:8px;background:var(--card);margin-bottom:8px;font-size:10px;color:var(--t3)}
+
+.msg-row{display:flex;animation:fadeIn .3s ease both}
+.msg-row.user{justify-content:flex-end}.msg-row.bot{justify-content:flex-start}
+.msg-bub{max-width:80%;padding:10px 14px;border-radius:16px;border:1px solid}
+.msg-bub.user{background:rgba(0,229,255,0.1);border-color:rgba(0,229,255,0.15);border-bottom-right-radius:4px}
+.msg-bub.bot{background:rgba(255,255,255,0.04);border-color:var(--border);border-bottom-left-radius:4px}
+.msg-text{font-size:13.5px;line-height:1.55;color:rgba(240,242,245,0.88);white-space:pre-wrap}
+.msg-time{font-size:10px;color:rgba(240,242,245,0.25);margin-top:4px;text-align:right}
+
+.typing{display:flex;gap:4px;padding:12px 16px;align-items:center}
+.typing span{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.3);animation:bounce 1.2s ease-in-out infinite}
+.typing span:nth-child(2){animation-delay:.15s}.typing span:nth-child(3){animation-delay:.3s}
+
+.sugg{display:flex;gap:6px;padding:0 16px 8px;overflow-x:auto;flex-shrink:0}
+.sugg-btn{padding:8px 14px;border-radius:100px;border:1px solid rgba(255,255,255,0.08);background:var(--card);color:var(--t2);font-size:12px;font-family:'Outfit';cursor:pointer;white-space:nowrap;transition:all .3s}
+.sugg-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+
+.ch-input{display:flex;gap:8px;padding:12px 16px;background:rgba(255,255,255,0.02);border-top:1px solid var(--border)}
+.ch-input input{flex:1;padding:12px 16px;border-radius:100px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);color:var(--t1);font-size:14px;font-family:'Outfit';outline:none}
+.ch-input input::placeholder{color:var(--t3)}
+.send-btn{width:44px;height:44px;border-radius:50%;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .3s;flex-shrink:0}
+.send-btn:disabled{opacity:.3}
+
+.ch-footer{display:flex;align-items:center;justify-content:center;gap:12px;padding:10px 16px;background:rgba(255,255,255,0.015);border-top:1px solid rgba(255,255,255,0.04)}
+.ch-footer span{font-size:11px;color:var(--t3)}
+.ch-footer a{padding:6px 16px;border-radius:100px;font-size:11px;font-weight:700;background:var(--grad);color:#070a11;text-decoration:none}
+</style>
+</head>
+<body>
+
+<!-- SELECTOR SCREEN -->
+<div id="selector">
+  <div class="sel-inner">
+    <div class="sel-icon">🤖</div>
+    <h1 class="sel-title">Prueba un Agente IA en vivo</h1>
+    <p class="sel-sub">Selecciona el tipo de negocio y chatea con un asistente IA real. Así funciona para tus clientes.</p>
+    <div class="ind-grid" id="indGrid"></div>
+    <p style="font-size:12px;color:rgba(240,242,245,0.2);margin-top:24px;text-align:center">Demo gratuito · Respuestas reales con IA · agenciacomercial.ai</p>
+  </div>
+</div>
+
+<!-- CHAT SCREEN -->
+<div id="chat">
+  <div class="ch-head">
+    <button class="ch-back" onclick="goBack()">←</button>
+    <div class="ch-avatar" id="chAvatar"></div>
+    <div class="ch-info"><div class="ch-name" id="chName"></div><div class="ch-status">Agente IA · En línea</div></div>
+    <div class="ch-brand">DEMO<br>agenciacomercial.ai</div>
+  </div>
+  <div class="ch-body" id="chBody">
+    <div class="ch-notice">🔒 Demo en vivo con IA real · Las respuestas son generadas por inteligencia artificial</div>
+  </div>
+  <div class="sugg" id="sugg"></div>
+  <div class="ch-input">
+    <input id="msgInput" placeholder="Escribe un mensaje..." onkeydown="if(event.key==='Enter')sendMsg()">
+    <button class="send-btn" id="sendBtn" onclick="sendMsg()" style="background:var(--cyan)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#070a11" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+  </div>
+  <div class="ch-footer">
+    <span>¿Quieres esto para tu negocio?</span>
+    <a href="https://wa.me/56958329265?text=Hola%2C%20probé%20el%20demo%20y%20quiero%20un%20agente%20IA%20para%20mi%20negocio" target="_blank">Contratar Agente IA →</a>
+  </div>
+</div>
+
+<script>
+const INDUSTRIES = [
+  {id:"hotel",emoji:"🏨",name:"Hotel / Turismo",desc:"Reservas, check-in, servicios",color:"#00e5ff",
+   prompt:"Eres el asistente IA de un hotel boutique de 4 estrellas en Puerto Varas, Chile llamado 'Hotel Lago Esmeralda'. Tienes habitaciones desde $89.000/noche (estándar) hasta $189.000/noche (suite lago). Ofreces: spa, restaurante, tours al volcán Osorno, navegación lago Llanquihue. Check-in 15:00, check-out 11:00. WiFi gratis, estacionamiento, desayuno buffet incluido.",
+   welcome:"¡Hola! 👋 Bienvenido al Hotel Lago Esmeralda. Soy tu asistente virtual y puedo ayudarte con reservas, servicios, tours y más. ¿En qué te puedo ayudar?",
+   suggestions:["¿Tienen disponibilidad este finde?","¿Cuánto cuesta la suite?","¿Qué tours ofrecen?"]},
+  {id:"restaurant",emoji:"🍽️",name:"Restaurante",desc:"Reservas, menú, delivery",color:"#ff2d7b",
+   prompt:"Eres el asistente IA del restaurante 'La Brasa Patagónica' en Santiago, Chile. Especialidad en carnes y mariscos. Horario: Lun-Jue 12:00-23:00, Vie-Sáb 12:00-01:00, Dom 12:00-17:00. Entradas $5.900-$9.900, fondos $12.900-$24.900. Reservas hasta 20 personas. Delivery disponible.",
+   welcome:"¡Hola! 👋 Bienvenido a La Brasa Patagónica. Puedo ayudarte con reservas, menú, horarios y delivery. ¿Qué necesitas?",
+   suggestions:["Mesa para 4 hoy a las 21:00","¿Cuál es el menú del día?","¿Hacen delivery?"]},
+  {id:"clinic",emoji:"🏥",name:"Clínica / Salud",desc:"Citas, consultas, horarios",color:"#22c55e",
+   prompt:"Eres el asistente IA de 'Clínica Dental Sonrisa' en Viña del Mar, Chile. Especialidades: ortodoncia, implantes, blanqueamiento. Doctores: Dra. Martínez, Dr. Rojas, Dra. Silva. Lun-Vie 9:00-19:00, Sáb 9:00-13:00. Limpieza $35.000, blanqueamiento $120.000, consulta $25.000. Convenio Fonasa e Isapres.",
+   welcome:"¡Hola! 👋 Bienvenido a Clínica Dental Sonrisa. Puedo agendar tu hora, informarte sobre tratamientos y valores. ¿En qué te ayudo?",
+   suggestions:["Quiero agendar una limpieza","¿Cuánto cuesta un implante?","¿Atienden con Fonasa?"]},
+  {id:"realestate",emoji:"🏠",name:"Inmobiliaria",desc:"Propiedades, visitas, cotización",color:"#f59e0b",
+   prompt:"Eres el asistente IA de 'Inmobiliaria Pacífico Sur' en Santiago. Dptos en Las Condes y Providencia desde 3.500 UF, casas en La Florida desde 5.200 UF, arriendos desde $450.000/mes. Agendas visitas y conectas con ejecutivos. Califica leads preguntando presupuesto y comuna.",
+   welcome:"¡Hola! 👋 Bienvenido a Inmobiliaria Pacífico Sur. Puedo mostrarte propiedades y agendar visitas. ¿Buscas comprar o arrendar?",
+   suggestions:["Busco depto en Providencia","¿Tienen arriendos?","Quiero agendar una visita"]},
+  {id:"legal",emoji:"⚖️",name:"Abogados",desc:"Consultas, agendar, áreas",color:"#7c3aed",
+   prompt:"Eres el asistente IA de 'Abogados Asociados del Sur' en Concepción. Áreas: laboral, civil, familia, empresarial, inmobiliario. Primera consulta gratuita 30 min. Consulta estándar $50.000. Lun-Vie 9:00-18:00.",
+   welcome:"¡Hola! 👋 Bienvenido a Abogados Asociados. Puedo orientarte y agendar tu primera consulta gratuita. ¿En qué área necesitas ayuda?",
+   suggestions:["Necesito asesoría laboral","¿La primera consulta es gratis?","Problema con arriendo"]},
+  {id:"ecommerce",emoji:"🛒",name:"E-commerce",desc:"Productos, pedidos, envíos",color:"#00e5ff",
+   prompt:"Eres el asistente IA de 'TechStore Chile', tienda online de tecnología. Notebooks, smartphones, tablets, gaming. Envío gratis sobre $50.000. Despacho 24-48hrs Santiago, 3-5 días regiones. 3 cuotas sin interés. Garantía 12 meses.",
+   welcome:"¡Hola! 👋 Bienvenido a TechStore Chile. Puedo ayudarte a encontrar productos, revisar pedidos o resolver dudas. ¿Qué buscas?",
+   suggestions:["¿Tienen el iPhone 16?","¿Cuánto demora el envío?","Quiero notebooks gamer"]},
+  {id:"gym",emoji:"💪",name:"Gym / Fitness",desc:"Planes, horarios, clases",color:"#f97316",
+   prompt:"Eres el asistente IA de 'FitZone Gym' en Santiago. Planes: mensual $29.990, trimestral $74.990, anual $249.990. Lun-Vie 6-23, Sáb 8-20, Dom 9-14. Clases: spinning, crossfit, yoga, funcional, box. Evaluación física y plan personalizado incluido. Primera clase gratis.",
+   welcome:"¡Hola! 👋 Bienvenido a FitZone Gym. Puedo informarte sobre planes, clases y horarios. ¿Qué te interesa?",
+   suggestions:["¿Cuánto cuesta el plan mensual?","¿Qué clases tienen?","Quiero una clase gratis"]},
+  {id:"automotive",emoji:"🚗",name:"Automotriz",desc:"Servicios, cotización, agenda",color:"#64748b",
+   prompt:"Eres el asistente IA de 'AutoPro Servicio Técnico' en Santiago. Mantención 5.000km $49.990, 10.000km $89.990, cambio aceite $29.990, frenos $79.990, scanner $19.990. Lun-Vie 8:30-18:30, Sáb 9-13. Todas las marcas. Garantía 6 meses.",
+   welcome:"¡Hola! 👋 Bienvenido a AutoPro. Puedo cotizar servicios, agendar tu hora y resolver dudas. ¿En qué te ayudo?",
+   suggestions:["Necesito una mantención","¿Cuánto cuesta cambio de aceite?","Quiero agendar hora"]},
+];
+
+function buildCustomIndustry(rubro) {
+  return {id:"custom",emoji:"✨",name:rubro,desc:"Personalizado",color:"#a855f7",
+    prompt:'Eres el asistente IA de una empresa del rubro "'+rubro+'" en Chile. Inventa un nombre creíble para el negocio. Conoce servicios típicos del rubro, precios en pesos chilenos, horarios habituales. Sé profesional y cierra ventas.',
+    welcome:'¡Hola! 👋 Soy el asistente virtual especializado en '+rubro+'. Atiendo consultas, agendo citas y ayudo a cerrar ventas. ¿En qué te puedo ayudar?',
+    suggestions:["¿Qué servicios ofrecen?","¿Cuáles son los precios?","Quiero agendar una hora"]};
+}
+
+let current = null;
+let history = [];
+let loading = false;
+
+// Build selector grid
+const grid = document.getElementById('indGrid');
+INDUSTRIES.forEach((ind, i) => {
+  const btn = document.createElement('button');
+  btn.className = 'ind-btn';
+  btn.style.animationDelay = `${i * 0.07}s`;
+  btn.innerHTML = `<span class="em">${ind.emoji}</span><span class="nm">${ind.name}</span><span class="ds">${ind.desc}</span>`;
+  btn.onmouseenter = () => { btn.style.borderColor = ind.color; btn.style.background = ind.color + '08'; };
+  btn.onmouseleave = () => { btn.style.borderColor = ''; btn.style.background = ''; };
+  btn.onclick = () => selectIndustry(ind);
+  grid.appendChild(btn);
+});
+
+// Custom rubro button
+const customBtn = document.createElement('button');
+customBtn.className = 'ind-btn';
+customBtn.style.animationDelay = `${INDUSTRIES.length * 0.07}s`;
+customBtn.style.borderStyle = 'dashed';
+customBtn.innerHTML = '<span class="em">✨</span><span class="nm">Otro rubro</span><span class="ds">Escribe el tuyo</span>';
+customBtn.onmouseenter = () => { customBtn.style.borderColor = '#a855f7'; customBtn.style.background = 'rgba(168,85,247,0.05)'; };
+customBtn.onmouseleave = () => { customBtn.style.borderColor = ''; customBtn.style.background = ''; };
+customBtn.onclick = () => {
+  customBtn.innerHTML = '<span class="em" style="font-size:22px">✨</span><input id="customInput" placeholder="Ej: Veterinaria, Gym..." style="width:100%;padding:9px 12px;border-radius:10px;background:rgba(255,255,255,0.06);border:1px solid rgba(168,85,247,0.3);color:#f0f2f5;font-size:12px;font-family:Outfit;outline:none;text-align:center"><button onclick="submitCustom()" style="padding:7px 18px;border-radius:100px;background:linear-gradient(135deg,#a855f7,#7c3aed);border:none;color:#fff;font-weight:700;font-size:12px;font-family:Outfit;cursor:pointer">Probar →</button>';
+  customBtn.style.borderColor = '#a855f7';
+  customBtn.style.background = 'rgba(168,85,247,0.05)';
+  customBtn.style.cursor = 'default';
+  customBtn.onclick = null;
+  const inp = document.getElementById('customInput');
+  inp.focus();
+  inp.onkeydown = (e) => { if(e.key==='Enter') submitCustom(); };
+};
+grid.appendChild(customBtn);
+
+function submitCustom() {
+  const v = document.getElementById('customInput')?.value?.trim();
+  if(v) selectIndustry(buildCustomIndustry(v));
+}
+
+function selectIndustry(ind) {
+  current = ind;
+  history = [{role:"assistant", content: ind.welcome}];
+  document.getElementById('selector').style.display = 'none';
+  document.getElementById('chat').classList.add('active');
+  document.getElementById('chAvatar').textContent = ind.emoji;
+  document.getElementById('chAvatar').style.background = ind.color + '20';
+  document.getElementById('chAvatar').style.borderColor = ind.color + '40';
+  document.getElementById('chName').textContent = ind.name;
+  document.getElementById('sendBtn').style.background = ind.color;
+
+  const body = document.getElementById('chBody');
+  body.innerHTML = '<div class="ch-notice">🔒 Demo en vivo con IA real · Las respuestas son generadas por inteligencia artificial</div>';
+  addMessage('bot', ind.welcome);
+
+  // Suggestions
+  const sugg = document.getElementById('sugg');
+  sugg.innerHTML = '';
+  ind.suggestions.forEach(s => {
+    const b = document.createElement('button');
+    b.className = 'sugg-btn';
+    b.textContent = s;
+    b.onclick = () => { document.getElementById('msgInput').value = s; sendMsg(); };
+    sugg.appendChild(b);
+  });
+
+  setTimeout(() => document.getElementById('msgInput').focus(), 300);
+}
+
+function goBack() {
+  current = null; history = []; loading = false;
+  document.getElementById('chat').classList.remove('active');
+  document.getElementById('selector').style.display = 'flex';
+}
+
+function addMessage(role, text) {
+  const body = document.getElementById('chBody');
+  const row = document.createElement('div');
+  row.className = `msg-row ${role}`;
+  const now = new Date().toLocaleTimeString('es-CL', {hour:'2-digit',minute:'2-digit'});
+  row.innerHTML = `<div class="msg-bub ${role}"><div class="msg-text">${escHtml(text)}</div><div class="msg-time">${now}${role==='user'?' ✓✓':' · IA'}</div></div>`;
+  body.appendChild(row);
+  body.scrollTop = body.scrollHeight;
+}
+
+function showTyping() {
+  const body = document.getElementById('chBody');
+  const row = document.createElement('div');
+  row.className = 'msg-row bot';
+  row.id = 'typingRow';
+  row.innerHTML = '<div class="msg-bub bot"><div class="typing"><span></span><span></span><span></span></div></div>';
+  body.appendChild(row);
+  body.scrollTop = body.scrollHeight;
+}
+
+function hideTyping() {
+  const t = document.getElementById('typingRow');
+  if (t) t.remove();
+}
+
+function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+async function sendMsg() {
+  const input = document.getElementById('msgInput');
+  const text = input.value.trim();
+  if (!text || loading) return;
+
+  input.value = '';
+  addMessage('user', text);
+  document.getElementById('sugg').innerHTML = '';
+  loading = true;
+
+  history.push({role:"user", content: text});
+  showTyping();
+
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ messages: history, systemPrompt: current.prompt }),
+    });
+    const data = await res.json();
+    const reply = data.text || "Disculpa, hubo un problema. ¿Puedes repetir?";
+    history.push({role:"assistant", content: reply});
+    hideTyping();
+    addMessage('bot', reply);
+  } catch(e) {
+    hideTyping();
+    addMessage('bot', "Disculpa, tuve un problema de conexión. ¿Puedes intentar de nuevo? 🙏");
+  }
+  loading = false;
+  input.focus();
+}
+</script>
+</body>
+</html>
