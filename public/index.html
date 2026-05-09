@@ -184,6 +184,18 @@ customBtn.onclick = () => {
 };
 grid.appendChild(customBtn);
 
+// Auto-select from URL parameter (e.g., ?rubro=hotel)
+const urlParams = new URLSearchParams(window.location.search);
+const rubroParam = urlParams.get('rubro');
+if (rubroParam) {
+  const match = INDUSTRIES.find(i => i.id === rubroParam);
+  if (match) {
+    setTimeout(() => selectIndustry(match), 300);
+  } else {
+    setTimeout(() => selectIndustry(buildCustomIndustry(rubroParam)), 300);
+  }
+}
+
 function submitCustom() {
   const v = document.getElementById('customInput')?.value?.trim();
   if(v) selectIndustry(buildCustomIndustry(v));
