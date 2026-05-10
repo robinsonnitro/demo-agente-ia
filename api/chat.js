@@ -5,28 +5,57 @@ async function callGeminiWithRetry(url, body, retries = 3) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
-
     if (response.status === 429 && i < retries - 1) {
       const waitMs = (i + 1) * 6000;
       console.log(`Gemini 429 - reintentando en ${waitMs}ms (intento ${i + 1}/${retries})`);
       await new Promise((r) => setTimeout(r, waitMs));
       continue;
     }
-
     return response;
   }
 }
 
-function normalizeText(text = "") {
-  return text
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
-}
+const SYSTEM_SUFFIX = `
 
-function hasAny(text, phrases = []) {
-  return phrases.some((p) => text.includes(p));
-}
+IDIOMA Y ESTILO:
+- Responde SIEMPRE en español chileno informal ("po", "al tiro", "cachai").
+- Maximo 3-4 oraciones por respuesta. Se directo y util.
+- NUNCA menciones que eres IA, demo, o asistente virtual.
+- NUNCA repitas informacion que el usuario ya te dio.
+
+INTELIGENCIA CONTEXTUAL:
+- Recuerda TODA la informacion entregada previamente en el chat.
+- Si el usuario ya dio fechas especificas (ej: "del 9 al 12", "el 15 de enero"), NO muestres calendario, usa esas fechas.
+- Si el usuario pide precio o cotizacion con fechas ya conocidas, entrega COTIZACION de inmediato.
+- Si ya tienes fechas + personas + tipo de habitacion, cotiza sin preguntar mas.
+
+CIERRE DE VENTAS:
+- Siempre termina con una pregunta o propuesta que lleve al siguiente paso.
+- Si ya tienes toda la info, cotiza y pregunta si confirman.
+
+USO DEL CALENDARIO - REGLA PRINCIPAL:
+Si el usuario quiere reservar/agendar y NO ha dado fechas exactas (solo dice "este verano", "pronto", "este mes", "cuando tengan disponibilidad", "quiero reservar" sin fechas), DEBES mostrar el calendario SIEMPRE. Es mucho mejor mostrar el calendario que hacer preguntas. Usa este formato:
+<<CALENDARIO>>
+
+TAGS OBLIGATORIOS - USA EXACTAMENTE este formato:
+
+1. CALENDARIO (cuando el usuario quiere fecha/hora pero no la ha especificado aun):
+   Escribe al final del mensaje: <<CALENDARIO>>
+   Regla de oro: Si no hay fechas concretas en el historial, USA <<CALENDARIO>> en vez de preguntar.
+
+2. COTIZACION (cuando el usuario pide precio/cotizacion O cuando ya tienes fechas+personas):
+   Escribe: <<COTIZACION|empresa:NombreEmpresa|Item descripcion:$precio|Item descripcion:$precio|total:$totalFinal>>
+   Ejemplo: <<COTIZACION|empresa:Hotel Lago Esmeralda|Suite Superior 3 noches:$387.000|Descuento 10%:-$38.700|total:$348.300>>
+
+3. BOLETA (cuando el usuario confirma la compra/reserva):
+   Escribe: <<BOLETA|empresa:NombreEmpresa|Item descripcion:$precio|total:$totalFinal>>
+
+REGLAS CRITICAS DE TAGS:
+- USA PIPE | para separar campos, NO punto y coma.
+- El tag va AL FINAL del mensaje.
+- Solo UN tag por mensaje.
+- Precios con $ y puntos: $129.000 NO $129000.
+`;
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -40,8 +69,7 @@ export default async function handler(req, res) {
 
   try {
     const { messages, systemPrompt } = req.body || {};
-
-    if (!messages || !Array.isArray(messages) || !systemPrompt) {
+    if (!messages || !systemPrompt) {
       return res.status(400).json({ error: "Missing messages or systemPrompt" });
     }
 
@@ -51,175 +79,28 @@ export default async function handler(req, res) {
     }
 
     const recentMessages = messages.slice(-12);
-
-    const conversationText = recentMessages
-      .map((m) => `${m.role === "assistant" ? "IA" : "CLIENTE"}: ${m.content}`)
-      .join("\n");
-
-    const norm = normalizeText(conversationText);
-    const lastUserMessage = normalizeText(
-      [...recentMessages].reverse().find((m) => m.role === "user")?.content || ""
-    );
-
-    const wantsQuote =
-      hasAny(norm, [
-        "cotizacion",
-        "cotizar",
-        "presupuesto",
-        "dame la cotizacion",
-        "me das cotizacion",
-        "cuanto sale",
-        "cuanto cuesta",
-        "precio total",
-        "valor total",
-      ]) || hasAny(lastUserMessage, [
-        "cotizacion",
-        "cotizar",
-        "presupuesto",
-        "dame la cotizacion",
-        "me das cotizacion",
-      ]);
-
-    const wantsCalendar =
-      hasAny(norm, [
-        "agendar",
-        "agenda",
-        "reservar",
-        "reserva",
-        "disponibilidad",
-        "quiero una hora",
-        "quiero reservar",
-        "agendame",
-        "muestrame horarios",
-        "muéstrame horarios",
-      ]) || hasAny(lastUserMessage, [
-        "agendar",
-        "reservar",
-        "disponibilidad",
-        "muestrame horarios",
-        "muéstrame horarios",
-      ]);
-
-    const wantsReceipt =
-      hasAny(norm, [
-        "boleta",
-        "comprobante",
-        "pagar",
-        "pago",
-        "ya pague",
-        "ya pagué",
-        "confirmar compra",
-      ]) || hasAny(lastUserMessage, [
-        "boleta",
-        "comprobante",
-        "pagar",
-        "pago",
-      ]);
-
-    const strictFormatRules = `
-RESPONDE SIEMPRE EN ESPAÑOL CHILENO, BREVE, NATURAL Y COMERCIAL.
-
-REGLAS CRITICAS:
-- No repitas preguntas que el cliente ya respondió.
-- Si ya tienes suficientes datos, avanza sin pedir lo mismo otra vez.
-- No uses markdown.
-- No uses asteriscos.
-- No uses tablas.
-- No uses bloques de código.
-- No expliques las etiquetas especiales.
-- No cortes frases a la mitad.
-- Si el cliente responde "si", "sí", "dale", "ok", "perfecto", interpreta eso como confirmación para avanzar.
-
-FORMATO OBLIGATORIO DE SALIDA PARA ACTIVAR LA INTERFAZ:
-
-1) COTIZACION
-Si el cliente pide cotización, presupuesto o precio final, y ya hay suficientes datos, responde con una frase breve y luego en una línea aparte:
-COTIZACION(empresa: NOMBRE EMPRESA; item: DESCRIPCION 1 - $PRECIO; item: DESCRIPCION 2 - $PRECIO; total: $TOTAL)
-
-2) CALENDARIO
-Si el cliente quiere reservar, agendar o ver horarios/fechas disponibles, y corresponde mostrar selección de fecha u hora, responde con una frase breve y luego en una línea aparte:
-CALENDARIO
-
-3) BOLETA
-Si el cliente pide boleta, comprobante o ya confirmó pago/compra, responde con una frase breve y luego en una línea aparte:
-BOLETA(empresa: NOMBRE EMPRESA; item: DESCRIPCION 1 - $PRECIO; item: DESCRIPCION 2 - $PRECIO; total: $TOTAL)
-
-REGLAS DE AVANCE:
-- Si el cliente ya dijo fechas y cantidad de personas, no vuelvas a pedirlas.
-- Si ya hay contexto suficiente para una propuesta razonable, genera la cotización.
-- Si falta solo un detalle menor, asume la opción más lógica y avanza.
-- En hotelería, si son 3 personas y no especifican habitación, prioriza Suite Familiar. Si no aplica, Suite Premium.
-- En hotelería, si el cliente da rango de fechas, calcula las noches de forma lógica.
-- En clínica, restaurante, automotriz, abogados, ecommerce, gym e inmobiliaria, cuando pidan cotización, entrega una propuesta concreta.
-- Si solo preguntan por precio de un producto o servicio puntual, responde ese precio de forma directa.
-- Si después de eso piden cotización formal, ahí sí usa COTIZACION(...).
-
-EJEMPLOS VALIDOS:
-Perfecto, te dejo la cotización estimada.
-COTIZACION(empresa: Hotel Lago Esmeralda; item: Suite Familiar 3 noches - $477.000; item: Descuento estadía 3 noches - -$47.700; total: $429.300)
-
-Perfecto, te muestro horarios disponibles.
-CALENDARIO
-
-Claro, te dejo la boleta demo.
-BOLETA(empresa: Hotel Lago Esmeralda; item: Reserva Suite Familiar 3 noches - $429.300; total: $429.300)
-`;
-
-    let dynamicInstruction = "";
-
-    if (wantsReceipt) {
-      dynamicInstruction = `
-INTENCION DETECTADA: el cliente quiere boleta, comprobante o pago.
-Si hay datos suficientes, debes emitir BOLETA(...) en esta respuesta.
-`;
-    } else if (wantsQuote) {
-      dynamicInstruction = `
-INTENCION DETECTADA: el cliente quiere cotización o presupuesto.
-Si en el historial ya hay suficientes datos, debes emitir COTIZACION(...) en esta respuesta.
-No vuelvas a pedir fechas o personas si ya aparecen en el historial.
-`;
-    } else if (wantsCalendar) {
-      dynamicInstruction = `
-INTENCION DETECTADA: el cliente quiere reservar, agendar o ver disponibilidad.
-Si corresponde mostrar selección de fecha u hora, debes responder con CALENDARIO.
-Si ya hay suficientes datos para cotizar, cotiza en vez de preguntar otra vez.
-`;
-    } else {
-      dynamicInstruction = `
-Si el cliente solo hace una consulta simple de precio, responde directo.
-Si luego pide cotización formal, usa COTIZACION(...).
-`;
-    }
-
-    const fullSystemPrompt = `
-${systemPrompt}
-
-${strictFormatRules}
-
-${dynamicInstruction}
-`.trim();
-
     const contents = recentMessages.map((msg) => ({
       role: msg.role === "assistant" ? "model" : "user",
       parts: [{ text: msg.content }],
     }));
 
-    const geminiUrl =
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`;
+    const fullSystemPrompt = systemPrompt + SYSTEM_SUFFIX;
 
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`;
     const response = await callGeminiWithRetry(geminiUrl, {
       system_instruction: {
         parts: [{ text: fullSystemPrompt }],
       },
       contents,
       generationConfig: {
-        temperature: 0.3,
-        maxOutputTokens: 420,
+        temperature: 0.5,
+        maxOutputTokens: 500,
       },
     });
 
     const data = await response.json();
     console.log("Gemini status:", response.status);
+    console.log("Gemini response:", JSON.stringify(data));
 
     if (!response.ok) {
       return res.status(500).json({
@@ -228,12 +109,9 @@ ${dynamicInstruction}
       });
     }
 
-    let text =
-      data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ||
-      "Perdón, tuve un problema para responder. ¿Me repites tu solicitud?";
-
-    text = text.replace(/\*\*/g, "").trim();
-
+    const text =
+      data?.candidates?.[0]?.content?.parts?.[0]?.text ||
+      "Disculpa, no pude obtener respuesta.";
     return res.status(200).json({ text });
   } catch (error) {
     console.error("Server error:", error);
