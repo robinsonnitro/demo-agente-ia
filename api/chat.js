@@ -4,26 +4,32 @@ export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-  if (req.method === "OPTIONS") return res.status(200).end();
-  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  const { messages, systemPrompt } = req.body;
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
+
+  const { messages, systemPrompt } = req.body || {};
 
   if (!messages || !systemPrompt) {
     return res.status(400).json({ error: "Missing messages or systemPrompt" });
   }
 
   const GEMINI_KEY = process.env.GEMINI_API_KEY;
+
   if (!GEMINI_KEY) {
     return res.status(500).json({ error: "GEMINI_API_KEY not configured" });
   }
 
   try {
-    // Convertir mensajes al formato Gemini
     const contents = [];
 
-    // System prompt como primer mensaje del usuario con contexto
-    const fullSystemPrompt = systemPrompt +
+    const fullSystemPrompt =
+      systemPrompt +
       "\n\nINSTRUCCIONES GENERALES:" +
       "\n- Responde SIEMPRE en español chileno natural, como en WhatsApp." +
       "\n- Máximo 3-4 oraciones por respuesta. Conciso pero informativo." +
@@ -38,16 +44,16 @@ export default async function handler(req, res) {
       "\nPuedes generar documentos y calendarios usando estos tags especiales en tu respuesta:" +
       "\n" +
       "\n1. COTIZACIÓN: Cuando el cliente pide una cotización, presupuesto o quiere saber el costo total de algo, incluye:" +
-      "\n   <<COTIZACION|empresa:Nombre Empresa|Servicio 1:$precio1|Servicio 2:$precio2|total:$precioTotal>>" +
-      "\n   Ejemplo: <<COTIZACION|empresa:Hotel Lago Esmeralda|Suite Premium 2 noches:$378.000|Desayuno incluido:$0|Transfer aeropuerto:$35.000|total:$413.000>>" +
+      '\n<COTIZACION>{"items":[{"concepto":"Habitación doble","cantidad":2,"precio":85000}],"total":170000}</COTIZACION>' +
+      '\nEjemplo: <COTIZACION>{"items":[{"concepto":"Tour volcanes","cantidad":2,"precio":45000}],"total":90000}</COTIZACION>' +
       "\n" +
       "\n2. CALENDARIO: Cuando el cliente quiere agendar, reservar fecha o pide disponibilidad, incluye:" +
-      "\n   <<CALENDARIO>>" +
-      "\n   Esto muestra un calendario interactivo donde el cliente selecciona fecha y hora." +
+      '\n<CALENDARIO>{"tipo":"reserva","titulo":"Reserva Hotel Lago Esmeralda"}</CALENDARIO>' +
+      "\nEsto muestra un calendario interactivo donde el cliente selecciona fecha y hora." +
       "\n" +
       "\n3. BOLETA: Cuando el cliente confirma una compra/reserva/contratación, incluye:" +
-      "\n   <<BOLETA|empresa:Nombre Empresa|Servicio contratado:$precio|total:$precioTotal>>" +
-      "\n   Ejemplo: <<BOLETA|empresa:Hotel Lago Esmeralda|Suite Premium 2 noches:$378.000|Transfer:$35.000|total:$413.000>>" +
+      '\n<BOLETA>{"cliente":"Juan Pérez","detalle":"Reserva habitación doble","total":85000}</BOLETA>' +
+      '\nEjemplo: <BOLETA>{"cliente":"María González","detalle":"Tour + traslado","total":120000}</BOLETA>' +
       "\n" +
       "\nREGLAS DE USO DE TAGS:" +
       "\n- Usa COTIZACION cuando: pidan precio, presupuesto, cotización, o pregunten cuánto cuesta algo con múltiples items." +
@@ -57,8 +63,6 @@ export default async function handler(req, res) {
       "\n- Solo usa UN tag por mensaje." +
       "\n- Los precios deben ser en pesos chilenos con formato $XX.XXX";
 
-
-    // Gemini usa el formato contents con roles "user" y "model"
     messages.forEach((msg) => {
       contents.push({
         role: msg.role === "assistant" ? "model" : "user",
@@ -93,12 +97,15 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    if (data.error) {
-      console.error("Gemini API error:", data.error);
-      return res.status(500).json({ error: data.error.message || "Gemini API error" });
+    if (!response.ok || data.error) {
+      console.error("Gemini API error:", data);
+      return res.status(500).json({
+        error: data?.error?.message || "Gemini API error",
+      });
     }
 
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text ||
+    const text =
+      data?.candidates?.[0]?.content?.parts?.[0]?.text ||
       "Disculpa, no pude procesar tu consulta. ¿Puedes intentar de nuevo?";
 
     return res.status(200).json({ text });
@@ -107,4 +114,3 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: "Error interno del servidor" });
   }
 }
-
