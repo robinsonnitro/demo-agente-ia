@@ -1,3 +1,21 @@
+// Llama a Gemini con reintentos automáticos en caso de 429
+async function callGeminiWithRetry(url, body, retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (response.status === 429 && i < retries - 1) {
+      const waitMs = (i + 1) * 6000; // 6s, 12s, 18s
+      console.log(`Gemini 429 - reintentando en ${waitMs}ms (intento ${i + 1}/${retries})`);
+      await new Promise((r) => setTimeout(r, waitMs));
+      continue;
+    }
+    return response;
+  }
+}
+
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
@@ -21,7 +39,10 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: "GEMINI_API_KEY not configured" });
     }
 
-    const contents = messages.map((msg) => ({
+    // Limitar historial a los últimos 10 mensajes para no agotar tokens
+    const recentMessages = messages.slice(-10);
+
+    const contents = recentMessages.map((msg) => ({
       role: msg.role === "assistant" ? "model" : "user",
       parts: [{ text: msg.content }],
     }));
@@ -30,26 +51,21 @@ export default async function handler(req, res) {
       systemPrompt +
       "\n\nResponde siempre en español chileno, breve, natural y útil.";
 
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          system_instruction: {
-            parts: [{ text: fullSystemPrompt }],
-          },
-          contents,
-          generationConfig: {
-            temperature: 0.7,
-            maxOutputTokens: 300,
-          },
-        }),
-      }
-    );
+    // Usar gemini-1.5-flash: mayor cuota en free tier que gemini-2.0-flash
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`;
+
+    const response = await callGeminiWithRetry(geminiUrl, {
+      system_instruction: {
+        parts: [{ text: fullSystemPrompt }],
+      },
+      contents,
+      generationConfig: {
+        temperature: 0.7,
+        maxOutputTokens: 300,
+      },
+    });
 
     const data = await response.json();
-
     console.log("Gemini status:", response.status);
     console.log("Gemini response:", JSON.stringify(data));
 
