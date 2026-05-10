@@ -15,6 +15,28 @@ async function callGeminiWithRetry(url, body, retries = 3) {
   }
 }
 
+function getCurrentDateContext() {
+  const now = new Date();
+  const days   = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+  const months = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto',
+                  'septiembre','octubre','noviembre','diciembre'];
+
+  // Calculate next 7 days for reference
+  const refs = [];
+  for (let i = 1; i <= 7; i++) {
+    const d = new Date(now);
+    d.setDate(now.getDate() + i);
+    refs.push(`${days[d.getDay()]} ${d.getDate()} de ${months[d.getMonth()]}`);
+  }
+
+  return `
+CONTEXTO TEMPORAL (inyectado automáticamente):
+- Hoy es ${days[now.getDay()]}, ${now.getDate()} de ${months[now.getMonth()]} de ${now.getFullYear()}.
+- Próximos 7 días: ${refs.join(' | ')}.
+- Usa esta información para resolver CUALQUIER fecha relativa que mencione el usuario ("hoy", "mañana", "este viernes", "este fin de semana", "la próxima semana", etc.) SIN preguntar al usuario por la fecha exacta.
+`;
+}
+
 const SYSTEM_SUFFIX = `
 
 IDIOMA Y ESTILO:
@@ -24,35 +46,46 @@ IDIOMA Y ESTILO:
 - NUNCA menciones que eres IA, demo, o asistente virtual.
 - NUNCA repitas información que el usuario ya te dio.
 
+REGLA CRÍTICA — FECHAS RELATIVAS:
+- Cuando el usuario diga "hoy", "mañana", "este viernes", "este fin de semana", "la próxima semana" u cualquier expresión temporal relativa, CALCULA tú mismo la fecha real usando el contexto temporal inyectado y AVANZA sin preguntar.
+- NUNCA pidas confirmación de una fecha que el usuario ya mencionó.
+- Ejemplo INCORRECTO: Usuario: "Mesa para 4 este viernes a las 21:00" → IA: "¿Podría indicarme la fecha exacta de este viernes?" ← ESTO ESTÁ PROHIBIDO.
+- Ejemplo CORRECTO: Usuario: "Mesa para 4 este viernes a las 21:00" → IA: "¡Perfecto! Reserva para el viernes [fecha resuelta] a las 21:00 para 4 personas. ¿Me indicas tu nombre y un teléfono de contacto para confirmar?"
+
+REGLA CRÍTICA — NO RE-PREGUNTES DATOS YA DADOS:
+- Si el usuario ya proporcionó fecha, hora, número de personas o cualquier otro dato, NO lo vuelvas a preguntar.
+- Identifica qué información falta y pide SOLO eso.
+- Orden típico de datos faltantes: nombre → teléfono/email → medio de pago.
+- En demos de hotel: puedes ofrecer pago en recepción como opción por defecto.
+
 INTELIGENCIA CONTEXTUAL:
 - Recuerda TODA la información entregada previamente en el chat.
-- Si el usuario ya dio fechas específicas (ej: "del 9 al 12", "el 15 de enero"), NO muestres calendario, usa esas fechas directamente.
-- Si el usuario pide precio o cotización con fechas ya conocidas, entrega COTIZACION de inmediato.
-- Si ya tienes fechas + personas + tipo de habitación, cotiza sin preguntar más.
+- Si ya tienes fechas + personas + tipo de habitación/servicio, cotiza sin preguntar más.
+- Si el usuario pide precio con fechas ya conocidas, entrega COTIZACION de inmediato.
 
 CIERRE DE VENTAS:
 - Siempre termina con una pregunta o propuesta que lleve al siguiente paso.
 - Si ya tienes toda la info, cotiza y pregunta si confirman.
 
-USO DEL CALENDARIO - REGLA PRINCIPAL:
-Si el usuario quiere reservar/agendar y NO ha dado fechas exactas (solo dice "este verano", "pronto", "este mes", "cuando tengan disponibilidad", "quiero reservar" sin fechas), DEBES mostrar el calendario SIEMPRE. Es mucho mejor mostrar el calendario que hacer preguntas. Usa este formato:
-<<CALENDARIO>>
+USO DEL CALENDARIO:
+- Muestra el calendario SOLO si el usuario NO ha dado ninguna fecha (ni exacta ni relativa).
+- Si ya dio una fecha (aunque sea relativa como "este viernes"), NO muestres el calendario.
+- Usa: <<CALENDARIO>>
 
-TAGS OBLIGATORIOS - USA EXACTAMENTE este formato:
+TAGS OBLIGATORIOS:
 
-1. CALENDARIO (cuando el usuario quiere fecha/hora pero no la ha especificado aún):
-   Escribe al final del mensaje: <<CALENDARIO>>
-   Regla de oro: Si no hay fechas concretas en el historial, USA <<CALENDARIO>> en vez de preguntar.
+1. CALENDARIO (solo cuando NO hay ninguna fecha mencionada):
+   <<CALENDARIO>>
 
-2. COTIZACION (cuando el usuario pide precio/cotización O cuando ya tienes fechas+personas):
-   Escribe: <<COTIZACION|empresa:NombreEmpresa|Item descripcion:$precio|Item descripcion:$precio|total:$totalFinal>>
+2. COTIZACION (cuando el usuario pide precio O ya tienes fechas+personas):
+   <<COTIZACION|empresa:NombreEmpresa|Item:$precio|total:$totalFinal>>
    Ejemplo: <<COTIZACION|empresa:Hotel Lago Esmeralda|Suite Superior 3 noches:$387.000|Descuento 10%:-$38.700|total:$348.300>>
 
 3. BOLETA (cuando el usuario confirma la compra/reserva):
-   Escribe: <<BOLETA|empresa:NombreEmpresa|Item descripcion:$precio|total:$totalFinal>>
+   <<BOLETA|empresa:NombreEmpresa|Item:$precio|total:$totalFinal>>
 
-REGLAS CRÍTICAS DE TAGS:
-- USA PIPE | para separar campos, NO punto y coma.
+REGLAS DE TAGS:
+- Pipe | para separar campos.
 - El tag va AL FINAL del mensaje.
 - Solo UN tag por mensaje.
 - Precios con $ y puntos: $129.000 NO $129000.
@@ -85,7 +118,8 @@ export default async function handler(req, res) {
       parts: [{ text: msg.content }],
     }));
 
-    const fullSystemPrompt = systemPrompt + SYSTEM_SUFFIX;
+    // Opción A: inyectar fecha actual + Opción C: reglas estrictas
+    const fullSystemPrompt = systemPrompt + getCurrentDateContext() + SYSTEM_SUFFIX;
 
     const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`;
     const response = await callGeminiWithRetry(geminiUrl, {
@@ -94,14 +128,13 @@ export default async function handler(req, res) {
       },
       contents,
       generationConfig: {
-        temperature: 0.5,
+        temperature: 0.4,
         maxOutputTokens: 500,
       },
     });
 
     const data = await response.json();
     console.log("Gemini status:", response.status);
-    console.log("Gemini response:", JSON.stringify(data));
 
     if (!response.ok) {
       return res.status(500).json({
