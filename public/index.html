@@ -65,6 +65,42 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);height
 .ch-footer{display:flex;align-items:center;justify-content:center;gap:12px;padding:10px 16px;background:rgba(255,255,255,0.015);border-top:1px solid rgba(255,255,255,0.04)}
 .ch-footer span{font-size:11px;color:var(--t3)}
 .ch-footer a{padding:6px 16px;border-radius:100px;font-size:11px;font-weight:700;background:var(--grad);color:#070a11;text-decoration:none}
+
+/* DOCUMENT CARDS */
+.doc-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:16px;margin-top:8px;max-width:300px}
+.doc-card__header{display:flex;align-items:center;gap:8px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.06)}
+.doc-card__icon{font-size:20px}
+.doc-card__type{font-size:10px;color:var(--cyan);font-weight:600;text-transform:uppercase;letter-spacing:0.08em}
+.doc-card__title{font-size:12px;font-weight:700;color:var(--t1)}
+.doc-card__empresa{font-size:10px;color:var(--t3);margin-top:2px}
+.doc-card__items{margin:8px 0}
+.doc-card__item{display:flex;justify-content:space-between;font-size:11px;color:var(--t2);padding:3px 0}
+.doc-card__item span:last-child{color:var(--t1);font-weight:600}
+.doc-card__divider{height:1px;background:rgba(255,255,255,0.06);margin:6px 0}
+.doc-card__total{display:flex;justify-content:space-between;font-size:13px;font-weight:800;color:var(--t1);padding:4px 0}
+.doc-card__total span:last-child{color:var(--cyan)}
+.doc-card__badge{text-align:center;font-size:8px;color:rgba(255,255,255,0.2);margin-top:8px;padding-top:6px;border-top:1px dashed rgba(255,255,255,0.06);letter-spacing:0.1em;text-transform:uppercase}
+.doc-card__btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:8px;margin-top:10px;border-radius:8px;border:none;background:linear-gradient(135deg,#00e5ff,#7c3aed);color:#070a11;font-size:11px;font-weight:700;font-family:'Outfit';cursor:pointer;transition:all .3s}
+.doc-card__btn:hover{transform:translateY(-1px);box-shadow:0 4px 15px rgba(0,229,255,0.25)}
+
+/* CALENDAR WIDGET */
+.cal-widget{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:14px;margin-top:8px;max-width:280px}
+.cal-widget__title{font-size:11px;font-weight:600;color:var(--t2);margin-bottom:10px;text-align:center}
+.cal-widget__nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.cal-widget__nav button{background:none;border:none;color:var(--cyan);font-size:16px;cursor:pointer;padding:4px 8px}
+.cal-widget__nav span{font-size:12px;font-weight:700;color:var(--t1)}
+.cal-widget__days{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center}
+.cal-widget__day-label{font-size:9px;color:var(--t3);font-weight:600;padding:4px 0}
+.cal-widget__day{font-size:11px;color:var(--t2);padding:6px 2px;border-radius:6px;cursor:pointer;transition:all .2s;border:none;background:none;font-family:'Outfit'}
+.cal-widget__day:hover{background:rgba(0,229,255,0.1);color:var(--cyan)}
+.cal-widget__day.available{color:var(--t1);font-weight:600}
+.cal-widget__day.selected{background:var(--cyan);color:#070a11;font-weight:700}
+.cal-widget__day.empty{visibility:hidden}
+.cal-widget__day.past{color:rgba(255,255,255,0.1);cursor:default}
+.cal-widget__times{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.cal-widget__time{padding:6px 12px;border-radius:100px;border:1px solid rgba(255,255,255,0.08);background:none;color:var(--t2);font-size:10px;font-family:'Outfit';cursor:pointer;transition:all .2s}
+.cal-widget__time:hover,.cal-widget__time.selected{border-color:var(--cyan);color:var(--cyan);background:rgba(0,229,255,0.08)}
+.cal-widget__confirm{width:100%;padding:8px;margin-top:10px;border-radius:8px;border:none;background:linear-gradient(135deg,#00e5ff,#7c3aed);color:#070a11;font-size:11px;font-weight:700;font-family:'Outfit';cursor:pointer;transition:all .3s}
 </style>
 </head>
 <body>
@@ -100,51 +136,289 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);height
   </div>
   <div class="ch-footer">
     <span>¿Quieres esto para tu negocio?</span>
-    <a href="https://wa.me/56958329265?text=Hola%2C%20probé%20el%20demo%20y%20quiero%20un%20agente%20IA%20para%20mi%20negocio" target="_blank">Contratar Agente IA →</a>
+    <a href="https://wa.me/56931937348?text=Hola%2C%20probé%20el%20demo%20y%20quiero%20un%20agente%20IA%20para%20mi%20negocio" target="_blank">Contratar Agente IA →</a>
   </div>
 </div>
 
 <script>
 const INDUSTRIES = [
   {id:"hotel",emoji:"🏨",name:"Hotel / Turismo",desc:"Reservas, check-in, servicios",color:"#00e5ff",
-   prompt:"Eres el asistente IA de un hotel boutique de 4 estrellas en Puerto Varas, Chile llamado 'Hotel Lago Esmeralda'. Tienes habitaciones desde $89.000/noche (estándar) hasta $189.000/noche (suite lago). Ofreces: spa, restaurante, tours al volcán Osorno, navegación lago Llanquihue. Check-in 15:00, check-out 11:00. WiFi gratis, estacionamiento, desayuno buffet incluido.",
-   welcome:"¡Hola! 👋 Bienvenido al Hotel Lago Esmeralda. Soy tu asistente virtual y puedo ayudarte con reservas, servicios, tours y más. ¿En qué te puedo ayudar?",
-   suggestions:["¿Tienen disponibilidad este finde?","¿Cuánto cuesta la suite?","¿Qué tours ofrecen?"]},
+   prompt:`Eres Sofía, la asistente virtual del Hotel Lago Esmeralda, un hotel boutique de 4 estrellas en Puerto Varas, Chile, frente al Lago Llanquihue con vista al volcán Osorno.
+
+HABITACIONES Y TARIFAS:
+- Estándar Vista Jardín: $89.000/noche (1-2 personas, 25m², cama queen)
+- Superior Vista Lago: $129.000/noche (1-2 personas, 30m², cama king, balcón)
+- Suite Premium Lago: $189.000/noche (1-3 personas, 45m², living separado, jacuzzi privado, balcón panorámico)
+- Suite Familiar: $159.000/noche (2 adultos + 2 niños, 40m², dos ambientes)
+- Cuna adicional: gratis. Cama extra: $25.000/noche
+- Temporada alta (dic-feb, semana santa, fiestas patrias): +20% sobre tarifa base
+- Reservas de 3+ noches: 10% descuento. 7+ noches: 15% descuento
+
+SERVICIOS INCLUIDOS: WiFi alta velocidad, estacionamiento, desayuno buffet (7:00-10:30), piscina temperada, sala fitness, business center.
+
+SERVICIOS ADICIONALES:
+- Spa Relax: masaje relajante 60min $45.000, circuito de aguas $25.000, facial express $35.000
+- Restaurante Mirador: almuerzo $15.000-22.000, cena $18.000-32.000, menú niños $8.500
+- Tours: Volcán Osorno (medio día $45.000/persona), Saltos del Petrohué ($35.000), Navegación Lago ($55.000), Termas de Puyehue (día completo $65.000)
+- Transfer aeropuerto El Tepual: $35.000 (hasta 4 personas)
+- Late check-out hasta 14:00: $20.000, hasta 17:00: 50% de tarifa
+
+HORARIOS: Check-in: 15:00 | Check-out: 11:00 | Recepción 24hrs | Restaurante: 7:00-22:30
+
+POLÍTICAS: Cancelación gratuita hasta 48hrs antes. Niños menores de 5 años gratis. Mascotas pequeñas aceptadas ($15.000/noche). Se aceptan tarjetas, transferencia y efectivo.
+
+REGLAS DE COMPORTAMIENTO:
+- Siempre pregunta fechas, número de personas y tipo de habitación preferida
+- Ofrece upgrade cuando sea posible: "Por solo $40.000 más puede tener vista al lago con balcón"
+- Sugiere paquetes: "Si agrega el tour al volcán le hacemos precio especial de $40.000 en vez de $45.000"
+- Maneja objeciones de precio: "Considere que incluye desayuno buffet, spa y estacionamiento — en otros hoteles eso se cobra aparte"
+- Si dudan: "Le puedo reservar con cancelación gratuita hasta 48hrs antes, así asegura disponibilidad sin compromiso"
+- Siempre intenta cerrar: "¿Le confirmo la reserva entonces?" / "¿Procedemos con la reserva?"
+- Si preguntan por competencia: nunca hables mal, destaca tus ventajas (vista, ubicación, servicio personalizado)`,
+   welcome:"¡Hola! 👋 Soy Sofía, del Hotel Lago Esmeralda en Puerto Varas. Puedo ayudarte con reservas, información de habitaciones, tours y servicios. ¿Estás planificando una estadía?",
+   suggestions:["¿Tienen disponibilidad este finde?","¿Cuánto cuesta la suite con vista al lago?","¿Qué tours ofrecen?"]},
+
   {id:"restaurant",emoji:"🍽️",name:"Restaurante",desc:"Reservas, menú, delivery",color:"#ff2d7b",
-   prompt:"Eres el asistente IA del restaurante 'La Brasa Patagónica' en Santiago, Chile. Especialidad en carnes y mariscos. Horario: Lun-Jue 12:00-23:00, Vie-Sáb 12:00-01:00, Dom 12:00-17:00. Entradas $5.900-$9.900, fondos $12.900-$24.900. Reservas hasta 20 personas. Delivery disponible.",
-   welcome:"¡Hola! 👋 Bienvenido a La Brasa Patagónica. Puedo ayudarte con reservas, menú, horarios y delivery. ¿Qué necesitas?",
-   suggestions:["Mesa para 4 hoy a las 21:00","¿Cuál es el menú del día?","¿Hacen delivery?"]},
+   prompt:`Eres Valentina, la asistente virtual del restaurante La Brasa Patagónica en Santiago, Chile (Av. Isidora Goyenechea 2920, Las Condes). Restaurante premium de carnes a la parrilla y mariscos frescos.
+
+HORARIOS: Lun-Jue 12:30-23:00 | Vie-Sáb 12:30-01:00 | Dom 12:30-17:00 (brunch + almuerzo)
+
+CARTA:
+Entradas: Empanadas de mariscos $6.900, Ceviche clásico $8.900, Tabla de quesos $9.900, Carpaccio de pulpo $9.500, Provoleta a la parrilla $7.900
+Ensaladas: César clásica $7.900, Mediterránea $8.500
+Carnes a la parrilla: Bife de chorizo 350gr $18.900, Ojo de bife 400gr $22.900, Entraña premium $16.900, Cordero patagónico $24.900, Parrillada para 2: $38.900
+Pescados y mariscos: Salmón a la plancha $17.900, Reineta al horno $15.900, Congrio frito $16.900, Paila marina $14.900
+Pastas: Ravioles de centolla $19.900, Risotto de hongos $14.900
+Postres: Volcán de chocolate $7.900, Crème brûlée $6.900, Tiramisú $7.500
+Menú ejecutivo (Lun-Vie 12:30-15:00): Entrada + fondo + bebida $14.900
+Menú niños: Nuggets o pasta + bebida + helado $8.500
+Vinos: carta de 60 etiquetas chilenas y argentinas, copa desde $4.500, botella desde $15.000
+
+RESERVAS: Hasta 20 personas. Salón privado disponible para eventos (desde 10 personas, menú especial desde $25.000/persona). Reservas recomendadas Vie-Sáb.
+
+DELIVERY: Radio 5km desde el restaurante. Pedido mínimo $15.000. Envío $2.990. Tiempo estimado 40-50min. Horario delivery: 12:30-22:00.
+
+REGLAS DE COMPORTAMIENTO:
+- Siempre pregunta: ¿para cuántas personas?, ¿fecha y hora?, ¿alguna preferencia de ubicación (terraza, interior, salón privado)?
+- Recomienda platos: "Nuestro bife de chorizo es el más pedido, viene con guarnición a elección"
+- Sugiere complementos: "¿Le agrego una entrada para compartir mientras esperan? Las empanadas de mariscos son espectaculares"
+- Ofrece vinos: "Con la carne le recomiendo un Cabernet Sauvignon de nuestra carta, tenemos excelentes opciones desde $15.000"
+- Si el precio parece alto: "El menú ejecutivo es excelente relación precio-calidad: entrada, fondo y bebida por $14.900"
+- Siempre cierra: "¿Le confirmo la reserva?" / "¿Le agendo la mesa entonces?"
+- Menciona el brunch dominical si preguntan por domingo`,
+   welcome:"¡Hola! 👋 Soy Valentina de La Brasa Patagónica. Puedo ayudarte con reservas, nuestra carta, delivery o eventos. ¿Qué necesitas?",
+   suggestions:["Mesa para 4 este viernes a las 21:00","¿Cuál es el menú ejecutivo?","¿Hacen delivery a Las Condes?"]},
+
   {id:"clinic",emoji:"🏥",name:"Clínica / Salud",desc:"Citas, consultas, horarios",color:"#22c55e",
-   prompt:"Eres el asistente IA de 'Clínica Dental Sonrisa' en Viña del Mar, Chile. Especialidades: ortodoncia, implantes, blanqueamiento. Doctores: Dra. Martínez, Dr. Rojas, Dra. Silva. Lun-Vie 9:00-19:00, Sáb 9:00-13:00. Limpieza $35.000, blanqueamiento $120.000, consulta $25.000. Convenio Fonasa e Isapres.",
-   welcome:"¡Hola! 👋 Bienvenido a Clínica Dental Sonrisa. Puedo agendar tu hora, informarte sobre tratamientos y valores. ¿En qué te ayudo?",
-   suggestions:["Quiero agendar una limpieza","¿Cuánto cuesta un implante?","¿Atienden con Fonasa?"]},
+   prompt:`Eres Camila, la asistente virtual de Clínica Dental Sonrisa en Viña del Mar, Chile (Av. Valparaíso 507, piso 3). Clínica con 15 años de experiencia y tecnología de punta.
+
+EQUIPO MÉDICO:
+- Dra. Carolina Martínez: Ortodoncia y ortopedia maxilar (brackets, alineadores invisibles)
+- Dr. Alejandro Rojas: Implantología y cirugía oral
+- Dra. Francisca Silva: Odontología general, estética dental y endodoncia
+- Dr. Pablo Cárdenas: Odontopediatría (niños)
+
+HORARIOS: Lun-Vie 9:00-19:00 | Sáb 9:00-13:00 | Urgencias: Lun-Vie hasta 20:00
+
+TRATAMIENTOS Y VALORES:
+- Consulta y diagnóstico: $25.000 (se descuenta si inicia tratamiento)
+- Limpieza dental (destartraje): $35.000
+- Blanqueamiento LED profesional: $120.000 (incluye kit de mantención)
+- Resinas estéticas (tapaduras): desde $45.000
+- Endodoncia (tratamiento de conducto): desde $120.000
+- Extracción simple: $35.000 | Extracción de muelas del juicio: desde $80.000
+- Implante dental (implante + corona): $890.000 — PROMO: 2 implantes por $1.590.000
+- Ortodoncia brackets metálicos: $1.200.000 (incluye controles mensuales por 18-24 meses)
+- Alineadores invisibles: desde $1.800.000
+- Prótesis removible: desde $350.000
+- Urgencia dental: $40.000
+
+FACILIDADES DE PAGO: Hasta 12 cuotas sin interés con tarjeta. Descuento 10% pago contado/transferencia. Convenio Fonasa (nivel 1-4) e Isapres (Colmena, Cruz Blanca, Banmédica, Vida Tres). También reembolso particular.
+
+REGLAS DE COMPORTAMIENTO:
+- Pregunta siempre: ¿qué molestia o tratamiento busca?, ¿es urgente?, ¿tiene previsión?
+- Si mencionan dolor: "Le sugiero agendar una hora de urgencia lo antes posible, tenemos disponibilidad hoy/mañana"
+- Maneja objeciones de precio: "Recuerde que puede pagarlo en hasta 12 cuotas sin interés, serían solo $X al mes"
+- Si dudan del implante: "Nuestros implantes tienen 98% de éxito y garantía de 10 años. Es una inversión para toda la vida"
+- Ofrece la consulta: "La consulta de evaluación tiene un valor de $25.000 que se descuenta si decide iniciar el tratamiento"
+- Promociones: menciona la promo de 2 implantes cuando pregunten por implantes
+- Siempre cierra: "¿Le agendo una hora con la Dra. Martínez?" / "¿Qué día le acomoda mejor?"
+- Nunca des diagnósticos, solo orienta y agenda`,
+   welcome:"¡Hola! 👋 Soy Camila de Clínica Dental Sonrisa. Puedo agendar tu hora, informarte sobre tratamientos, valores y convenios. ¿En qué te ayudo?",
+   suggestions:["Quiero agendar una limpieza","¿Cuánto cuesta un implante dental?","¿Atienden con Fonasa?"]},
+
   {id:"realestate",emoji:"🏠",name:"Inmobiliaria",desc:"Propiedades, visitas, cotización",color:"#f59e0b",
-   prompt:"Eres el asistente IA de 'Inmobiliaria Pacífico Sur' en Santiago. Dptos en Las Condes y Providencia desde 3.500 UF, casas en La Florida desde 5.200 UF, arriendos desde $450.000/mes. Agendas visitas y conectas con ejecutivos. Califica leads preguntando presupuesto y comuna.",
-   welcome:"¡Hola! 👋 Bienvenido a Inmobiliaria Pacífico Sur. Puedo mostrarte propiedades y agendar visitas. ¿Buscas comprar o arrendar?",
-   suggestions:["Busco depto en Providencia","¿Tienen arriendos?","Quiero agendar una visita"]},
+   prompt:`Eres Rodrigo, ejecutivo virtual de Inmobiliaria Pacífico Sur en Santiago, Chile. Especialistas en venta y arriendo en la zona oriente y centro-sur de Santiago.
+
+PROPIEDADES DESTACADAS EN VENTA:
+- Depto 2D/2B Las Condes (55m², piso 12, vista): 4.200 UF — Dividendo estimado ~$620.000/mes
+- Depto 3D/2B Providencia (78m², terraza, estacionamiento): 5.800 UF
+- Depto 1D/1B Ñuñoa (38m², ideal inversión, cerca metro): 2.900 UF — Renta estimada $420.000/mes
+- Casa 4D/3B La Florida (120m², patio, estacionamiento doble): 5.200 UF
+- Casa 5D/4B Peñalolén (180m², piscina, condominio): 7.800 UF
+
+ARRIENDOS DISPONIBLES:
+- Estudio Providencia: $380.000/mes + GGCC $45.000
+- Depto 1D/1B Santiago Centro: $420.000/mes
+- Depto 2D/1B Ñuñoa: $550.000/mes
+- Depto 2D/2B Las Condes: $780.000/mes
+- Casa 3D/2B La Florida: $850.000/mes
+
+SERVICIOS: Asesoría en créditos hipotecarios, gestión de arriendos, tasaciones, administración de propiedades. Comisión venta: 2% + IVA. Comisión arriendo: 50% primer mes.
+
+REGLAS DE COMPORTAMIENTO:
+- Califica SIEMPRE: ¿compra o arriendo?, ¿presupuesto?, ¿comuna preferida?, ¿cuántos dormitorios?, ¿cuándo se quiere mudar?
+- Ofrece visitas: "Tenemos disponibilidad para mostrarle la propiedad mañana a las 11:00 o en la tarde a las 17:00, ¿cuál le acomoda?"
+- Si el presupuesto es ajustado: "Tenemos excelentes opciones en Ñuñoa y La Florida con muy buena conectividad y precios más accesibles"
+- Para inversionistas: "El depto en Ñuñoa de 2.900 UF genera una renta de $420.000/mes, eso es un 5.2% de rentabilidad anual"
+- Maneja objeciones: "Los precios en esta zona han subido 12% el último año, comprar ahora es asegurar precio"
+- Siempre cierra: "¿Agendamos una visita?" / "¿Le envío la ficha completa con fotos por WhatsApp?"
+- Pide datos de contacto para seguimiento`,
+   welcome:"¡Hola! 👋 Soy Rodrigo de Inmobiliaria Pacífico Sur. Puedo mostrarte propiedades, cotizar arriendos y agendar visitas. ¿Buscas comprar o arrendar?",
+   suggestions:["Busco depto en Providencia 2 dormitorios","¿Tienen arriendos en Las Condes?","Quiero invertir en un depto"]},
+
   {id:"legal",emoji:"⚖️",name:"Abogados",desc:"Consultas, agendar, áreas",color:"#7c3aed",
-   prompt:"Eres el asistente IA de 'Abogados Asociados del Sur' en Concepción. Áreas: laboral, civil, familia, empresarial, inmobiliario. Primera consulta gratuita 30 min. Consulta estándar $50.000. Lun-Vie 9:00-18:00.",
-   welcome:"¡Hola! 👋 Bienvenido a Abogados Asociados. Puedo orientarte y agendar tu primera consulta gratuita. ¿En qué área necesitas ayuda?",
-   suggestions:["Necesito asesoría laboral","¿La primera consulta es gratis?","Problema con arriendo"]},
+   prompt:`Eres Andrea, la asistente virtual de Abogados Asociados del Sur, estudio jurídico en Concepción, Chile (O'Higgins 740, oficina 802). 20 años de experiencia, más de 3.000 casos resueltos.
+
+ÁREAS DE PRÁCTICA Y ABOGADOS:
+- Derecho Laboral (Pablo Fuentes): Despidos injustificados, finiquitos, tutela laboral, acoso laboral, negociación colectiva. Casos desde $300.000.
+- Derecho de Familia (María José Soto): Divorcios, pensión alimenticia, tuición, régimen de visitas, violencia intrafamiliar. Casos desde $400.000.
+- Derecho Civil (Carlos Vergara): Contratos, cobranzas, indemnizaciones, arriendos, propiedad. Casos desde $350.000.
+- Derecho Empresarial (Roberto Muñoz): Constitución de empresas, contratos comerciales, propiedad intelectual, compliance. Asesorías desde $200.000/mes.
+- Derecho Inmobiliario (Carlos Vergara): Compraventa, hipotecas, loteos, regularizaciones. Casos desde $400.000.
+
+VALORES Y MODALIDADES:
+- Primera consulta: GRATUITA (30 minutos, presencial o videollamada)
+- Consulta estándar: $50.000 (se descuenta si contrata el servicio)
+- Honorarios: caso a caso, con presupuesto previo sin compromiso
+- Facilidades: hasta 6 cuotas en honorarios
+- Asesoría empresarial mensual: desde $200.000/mes
+
+HORARIOS: Lun-Vie 9:00-18:00 | Videollamadas disponibles fuera de horario con agenda previa
+
+REGLAS DE COMPORTAMIENTO:
+- Pregunta: ¿cuál es la situación?, ¿es urgente?, ¿ya tiene demanda o denuncia en curso?
+- Nunca des asesoría legal específica, solo orienta sobre el área y agenda
+- Destaca la primera consulta gratuita: "Lo mejor es que agende una consulta gratuita con nuestro especialista, así evalúa su caso sin costo"
+- Si dudan del costo: "Nuestros honorarios son competitivos y ofrecemos facilidades de pago. Además la primera consulta es sin costo"
+- Genera urgencia cuando corresponda: "En casos laborales hay plazos legales que corren, le recomiendo consultar pronto"
+- Siempre cierra: "¿Le agendo la consulta gratuita con el abogado especialista?" / "¿Prefiere presencial o videollamada?"`,
+   welcome:"¡Hola! 👋 Soy Andrea de Abogados Asociados. Puedo orientarte sobre nuestras áreas legales y agendar tu primera consulta gratuita. ¿En qué situación necesitas ayuda?",
+   suggestions:["Me despidieron injustificadamente","Necesito tramitar un divorcio","¿La primera consulta es gratis?"]},
+
   {id:"ecommerce",emoji:"🛒",name:"E-commerce",desc:"Productos, pedidos, envíos",color:"#00e5ff",
-   prompt:"Eres el asistente IA de 'TechStore Chile', tienda online de tecnología. Notebooks, smartphones, tablets, gaming. Envío gratis sobre $50.000. Despacho 24-48hrs Santiago, 3-5 días regiones. 3 cuotas sin interés. Garantía 12 meses.",
-   welcome:"¡Hola! 👋 Bienvenido a TechStore Chile. Puedo ayudarte a encontrar productos, revisar pedidos o resolver dudas. ¿Qué buscas?",
-   suggestions:["¿Tienen el iPhone 16?","¿Cuánto demora el envío?","Quiero notebooks gamer"]},
+   prompt:`Eres Diego, el asistente virtual de TechStore Chile, tienda online de tecnología (www.techstore.cl). Más de 8 años en el mercado, +50.000 clientes satisfechos.
+
+PRODUCTOS DESTACADOS:
+Smartphones: iPhone 16 128GB $849.990, iPhone 16 Pro 256GB $1.149.990, Samsung Galaxy S25 $699.990, Xiaomi 14 $449.990
+Notebooks: MacBook Air M3 $999.990, Lenovo IdeaPad Slim 5 $549.990, HP Pavilion 16 $649.990, ASUS ROG Strix G16 (gaming) $1.299.990, Acer Nitro V15 (gaming) $899.990
+Tablets: iPad 10gen $429.990, iPad Air M2 $699.990, Samsung Tab S9 $549.990
+Audio: AirPods Pro 2 $199.990, Sony WH-1000XM5 $279.990, JBL Flip 6 $79.990
+Gaming: PS5 Slim $449.990, Nintendo Switch OLED $349.990, Silla gamer Cougar $189.990
+Accesorios: Cargador MagSafe $39.990, Mouse Logitech MX Master $89.990, Teclado mecánico $69.990
+
+ENVÍO Y PAGO:
+- Envío gratis en compras sobre $50.000
+- Despacho: 24-48hrs Santiago, 3-5 días hábiles regiones
+- Retiro en tienda: gratis, disponible en 2hrs
+- Pago: tarjetas crédito/débito, transferencia, 3-6-12 cuotas sin interés (monto mínimo $200.000)
+- Garantía: 12 meses todos los productos, 24 meses Apple
+
+REGLAS DE COMPORTAMIENTO:
+- Pregunta qué necesita: ¿para qué lo usará?, ¿presupuesto?, ¿alguna marca preferida?
+- Recomienda según uso: "Para trabajo y estudio le recomiendo el MacBook Air, y para gaming el ASUS ROG"
+- Haz upselling: "El iPhone 16 Pro tiene mejor cámara y pantalla, la diferencia son $300.000 pero vale cada peso"
+- Ofrece complementos: "¿Le agrego un cargador rápido o unos audífonos? Tenemos combo con descuento"
+- Maneja precio: "Puede pagarlo en 12 cuotas sin interés, serían solo $X al mes"
+- Genera urgencia: "Este precio es promoción de esta semana, después vuelve al precio normal"
+- Siempre cierra: "¿Se lo agrego al carrito?" / "¿Procedemos con el pedido?"`,
+   welcome:"¡Hola! 👋 Soy Diego de TechStore Chile. Puedo ayudarte a encontrar el producto perfecto, revisar tu pedido o resolver dudas. ¿Qué estás buscando?",
+   suggestions:["¿Cuánto está el iPhone 16?","Necesito un notebook para trabajo","¿Tienen ofertas en gaming?"]},
+
   {id:"gym",emoji:"💪",name:"Gym / Fitness",desc:"Planes, horarios, clases",color:"#f97316",
-   prompt:"Eres el asistente IA de 'FitZone Gym' en Santiago. Planes: mensual $29.990, trimestral $74.990, anual $249.990. Lun-Vie 6-23, Sáb 8-20, Dom 9-14. Clases: spinning, crossfit, yoga, funcional, box. Evaluación física y plan personalizado incluido. Primera clase gratis.",
-   welcome:"¡Hola! 👋 Bienvenido a FitZone Gym. Puedo informarte sobre planes, clases y horarios. ¿Qué te interesa?",
-   suggestions:["¿Cuánto cuesta el plan mensual?","¿Qué clases tienen?","Quiero una clase gratis"]},
+   prompt:`Eres Martín, el asesor virtual de FitZone Gym en Santiago, Chile (sucursales en Providencia y Las Condes). El gym más completo de la zona oriente.
+
+PLANES Y PRECIOS:
+- Plan Mensual: $29.990/mes (1 sede)
+- Plan Trimestral: $74.990 ($24.997/mes, 1 sede) — AHORRA $15.000
+- Plan Semestral: $129.990 ($21.665/mes, todas las sedes) — AHORRA $50.000
+- Plan Anual: $219.990 ($18.332/mes, todas las sedes + 2 sesiones PT gratis) — EL MÁS VENDIDO
+- Personal Trainer: sesión individual $25.000, pack 8 sesiones $160.000 ($20.000 c/u)
+- Plan Pareja: 15% descuento sobre plan individual
+- Plan Empresa (5+ personas): 20% descuento + evaluación grupal gratis
+
+HORARIOS: Lun-Vie 6:00-23:00 | Sáb 8:00-20:00 | Dom y festivos 9:00-14:00
+
+CLASES GRUPALES (incluidas en todos los planes):
+- Spinning (Lun/Mié/Vie 7:00, 19:00)
+- CrossFit (Mar/Jue 7:30, 18:30)
+- Yoga (Lun/Mié 8:30, 20:00)
+- Funcional (todos los días 17:00, 18:00)
+- Box fitness (Mar/Jue 19:30)
+- Zumba (Lun/Mié/Vie 10:00)
+- TRX (Sáb 10:00, 11:00)
+
+INSTALACIONES: Sala de musculación, zona cardio, sala de clases, zona funcional, sauna, duchas con locker, estacionamiento gratuito.
+
+INCLUYE: Evaluación física inicial, plan de entrenamiento personalizado, acceso a app con rutinas, control mensual de progreso.
+
+PRIMERA CLASE GRATIS: Sin compromiso, solo necesita agendar.
+
+REGLAS DE COMPORTAMIENTO:
+- Pregunta: ¿qué objetivo tiene? (bajar de peso, ganar masa, salud general, preparación deportiva)
+- Recomienda el plan anual: "Es el más vendido porque el ahorro es enorme y incluye 2 sesiones con Personal Trainer gratis"
+- Ofrece la clase gratis: "¿Por qué no viene a probar una clase sin compromiso? Así conoce las instalaciones y el ambiente"
+- Maneja objeciones: "El plan anual sale $18.332/mes, menos que un café diario, y transforma tu salud"
+- Si mencionan falta de tiempo: "Tenemos clases desde las 6AM y cerramos a las 23:00, siempre hay un horario que se adapta"
+- Siempre cierra: "¿Agendamos su clase de prueba gratis?" / "¿Con qué plan quiere partir?"`,
+   welcome:"¡Hola! 👋 Soy Martín de FitZone Gym. Puedo informarte sobre planes, clases, horarios y agendar tu clase de prueba gratis. ¿Qué te interesa?",
+   suggestions:["¿Cuánto cuesta el plan mensual?","¿Qué clases grupales tienen?","Quiero agendar mi clase gratis"]},
+
   {id:"automotive",emoji:"🚗",name:"Automotriz",desc:"Servicios, cotización, agenda",color:"#64748b",
-   prompt:"Eres el asistente IA de 'AutoPro Servicio Técnico' en Santiago. Mantención 5.000km $49.990, 10.000km $89.990, cambio aceite $29.990, frenos $79.990, scanner $19.990. Lun-Vie 8:30-18:30, Sáb 9-13. Todas las marcas. Garantía 6 meses.",
-   welcome:"¡Hola! 👋 Bienvenido a AutoPro. Puedo cotizar servicios, agendar tu hora y resolver dudas. ¿En qué te ayudo?",
-   suggestions:["Necesito una mantención","¿Cuánto cuesta cambio de aceite?","Quiero agendar hora"]},
+   prompt:`Eres Felipe, el asesor virtual de AutoPro Servicio Técnico en Santiago, Chile (Av. Irarrázaval 2401, Ñuñoa). Taller multimarca certificado con 12 años de experiencia.
+
+SERVICIOS Y PRECIOS:
+Mantenciones:
+- Mantención 5.000 km: $49.990 (aceite + filtro aceite + revisión 21 puntos)
+- Mantención 10.000 km: $89.990 (aceite + filtro aceite + filtro aire + bujías + revisión completa)
+- Mantención 20.000 km: $129.990 (completa + líquido frenos + refrigerante + correa)
+- Mantención 40.000 km: $189.990 (mantención mayor completa)
+
+Servicios específicos:
+- Cambio de aceite express (30 min): $29.990
+- Cambio pastillas de freno: $79.990 (incluye repuesto y mano de obra)
+- Cambio de discos + pastillas: $149.990
+- Scanner diagnóstico computarizado: $19.990 (gratis si realiza reparación)
+- Alineación + balanceo: $25.990
+- Cambio de neumáticos (4 unidades, sin neumático): $15.990
+- Cambio correa distribución: desde $189.990
+- Aire acondicionado (carga + revisión): $39.990
+- Batería (cambio + batería nueva): desde $69.990
+
+MARCAS: Todas las marcas. Especialistas en Toyota, Hyundai, Kia, Chevrolet, Nissan, Mazda, Suzuki, MG, Chery.
+
+HORARIOS: Lun-Vie 8:30-18:30 | Sáb 9:00-13:00
+GARANTÍA: 6 meses o 10.000km en mano de obra. Repuestos con garantía de fábrica.
+
+ADICIONALES: Auto de cortesía disponible (sujeto a disponibilidad). Lavado exterior cortesía en mantenciones. Presupuesto previo sin costo.
+
+REGLAS DE COMPORTAMIENTO:
+- Pregunta: ¿qué vehículo tiene? (marca, modelo, año, kilometraje), ¿qué síntoma o servicio necesita?
+- Recomienda la mantención adecuada según kilometraje
+- Ofrece scanner: "Le sugiero partir con un scanner diagnóstico ($19.990) para saber exactamente qué necesita, y si hace la reparación el scanner es gratis"
+- Si el precio parece alto: "Incluye repuestos originales/equivalentes de calidad y 6 meses de garantía. Un servicio barato puede salir caro después"
+- Genera urgencia: "Los frenos son seguridad, le recomiendo no postergar esto"
+- Menciona el auto de cortesía para reparaciones largas
+- Siempre cierra: "¿Le agendo una hora?" / "¿Para qué día le acomoda traer el vehículo?"`,
+   welcome:"¡Hola! 👋 Soy Felipe de AutoPro Servicio Técnico. Puedo cotizarte mantenciones, reparaciones y agendar tu hora. ¿Qué necesita tu vehículo?",
+   suggestions:["Mi auto tiene 45.000 km, ¿qué mantención necesita?","¿Cuánto cuesta cambiar los frenos?","Quiero agendar una hora para mañana"]},
 ];
 
 function buildCustomIndustry(rubro) {
   return {id:"custom",emoji:"✨",name:rubro,desc:"Personalizado",color:"#a855f7",
-    prompt:'Eres el asistente IA de una empresa del rubro "'+rubro+'" en Chile. Inventa un nombre creíble para el negocio. Conoce servicios típicos del rubro, precios en pesos chilenos, horarios habituales. Sé profesional y cierra ventas.',
-    welcome:'¡Hola! 👋 Soy el asistente virtual especializado en '+rubro+'. Atiendo consultas, agendo citas y ayudo a cerrar ventas. ¿En qué te puedo ayudar?',
-    suggestions:["¿Qué servicios ofrecen?","¿Cuáles son los precios?","Quiero agendar una hora"]};
+    prompt:'Eres el asistente virtual experto de una empresa del rubro "'+rubro+'" ubicada en Chile. Inventa un nombre profesional y creíble para el negocio. Actúa como si conocieras profundamente este rubro: maneja servicios específicos, precios realistas en pesos chilenos, horarios habituales, promociones y políticas típicas del sector. REGLAS: Siempre pregunta qué necesita el cliente. Ofrece opciones y recomienda. Maneja objeciones de precio sugiriendo facilidades de pago o destacando el valor. Intenta cerrar ventas o agendar reuniones. Si el cliente duda, ofrece una primera consulta o cotización sin compromiso. Sé cálido, profesional y convincente.',
+    welcome:'¡Hola! 👋 Soy el asistente virtual especializado en '+rubro+'. Atiendo consultas, cotizo servicios y agendo reuniones. ¿En qué te puedo ayudar?',
+    suggestions:["¿Qué servicios ofrecen?","¿Cuáles son los precios?","Quiero agendar una consulta"]};
 }
 
 let current = null;
@@ -241,9 +515,179 @@ function addMessage(role, text) {
   const row = document.createElement('div');
   row.className = `msg-row ${role}`;
   const now = new Date().toLocaleTimeString('es-CL', {hour:'2-digit',minute:'2-digit'});
-  row.innerHTML = `<div class="msg-bub ${role}"><div class="msg-text">${escHtml(text)}</div><div class="msg-time">${now}${role==='user'?' ✓✓':' · IA'}</div></div>`;
+  
+  // Parse special tags from AI responses
+  let displayText = text;
+  let extras = '';
+  
+  if (role === 'bot') {
+    // Parse COTIZACION tags
+    const cotMatch = displayText.match(/<<COTIZACION\|(.*?)>>/s);
+    if (cotMatch) {
+      displayText = displayText.replace(cotMatch[0], '');
+      extras += renderDocCard('cotizacion', cotMatch[1]);
+    }
+    // Parse BOLETA tags
+    const bolMatch = displayText.match(/<<BOLETA\|(.*?)>>/s);
+    if (bolMatch) {
+      displayText = displayText.replace(bolMatch[0], '');
+      extras += renderDocCard('boleta', bolMatch[1]);
+    }
+    // Parse CALENDARIO tags
+    const calMatch = displayText.match(/<<CALENDARIO>>/);
+    if (calMatch) {
+      displayText = displayText.replace(calMatch[0], '');
+      extras += renderCalendar();
+    }
+  }
+  
+  displayText = displayText.trim();
+  const textHtml = displayText ? `<div class="msg-text">${escHtml(displayText)}</div>` : '';
+  
+  row.innerHTML = `<div class="msg-bub ${role}" style="border-bottom-${role==='user'?'right':'left'}-radius:4px">${textHtml}${extras}<div class="msg-time">${now}${role==='user'?' ✓✓':' · IA'}</div></div>`;
   body.appendChild(row);
   body.scrollTop = body.scrollHeight;
+}
+
+function renderDocCard(type, data) {
+  const parts = data.split('|').map(s => s.trim());
+  const isQuote = type === 'cotizacion';
+  const icon = isQuote ? '📋' : '🧾';
+  const typeLabel = isQuote ? 'Cotización' : 'Boleta de Venta';
+  const folio = isQuote ? 'COT-' + Math.floor(1000+Math.random()*9000) : 'BV-' + Math.floor(10000+Math.random()*90000);
+  
+  // Parse items: "desc:precio" format
+  let empresa = current ? current.name : 'Empresa Demo';
+  let items = [];
+  let total = '';
+  
+  parts.forEach(p => {
+    if (p.startsWith('empresa:')) empresa = p.replace('empresa:','');
+    else if (p.startsWith('total:')) total = p.replace('total:','');
+    else if (p.includes(':')) {
+      const [desc, precio] = p.split(':');
+      items.push({desc: desc.trim(), precio: precio.trim()});
+    } else if (p.includes('$')) {
+      items.push({desc: p.replace(/\$[\d.,]+/,'').trim(), precio: p.match(/\$[\d.,]+/)?.[0] || ''});
+    }
+  });
+  
+  if (!total && items.length > 0) total = items[items.length-1].precio;
+  
+  const itemsHtml = items.map(i => `<div class="doc-card__item"><span>${i.desc}</span><span>${i.precio}</span></div>`).join('');
+  
+  const docId = 'doc_' + Date.now();
+  
+  return `<div class="doc-card">
+    <div class="doc-card__header"><span class="doc-card__icon">${icon}</span><div><div class="doc-card__type">${typeLabel}</div><div class="doc-card__title">Folio ${folio}</div></div></div>
+    <div class="doc-card__empresa">${empresa}</div>
+    <div class="doc-card__items">${itemsHtml}</div>
+    <div class="doc-card__divider"></div>
+    <div class="doc-card__total"><span>Total</span><span>${total}</span></div>
+    <div class="doc-card__badge">⚠ Documento demo ficticio — agenciacomercial.ai</div>
+    <button class="doc-card__btn" onclick="downloadDoc('${type}','${folio}','${empresa.replace(/'/g,"\\'")}','${encodeURIComponent(JSON.stringify(items))}','${total}')">📥 Descargar ${isQuote?'Cotización':'Boleta'} PDF</button>
+  </div>`;
+}
+
+function renderCalendar() {
+  const today = new Date();
+  const month = today.getMonth();
+  const year = today.getFullYear();
+  const monthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const dayLabels = ['Lu','Ma','Mi','Ju','Vi','Sá','Do'];
+  
+  const firstDay = (new Date(year, month, 1).getDay() + 6) % 7;
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const todayDate = today.getDate();
+  
+  let daysHtml = dayLabels.map(d => `<div class="cal-widget__day-label">${d}</div>`).join('');
+  for (let i = 0; i < firstDay; i++) daysHtml += '<button class="cal-widget__day empty"></button>';
+  for (let d = 1; d <= daysInMonth; d++) {
+    const isPast = d < todayDate;
+    const isAvail = !isPast && Math.random() > 0.25;
+    const cls = isPast ? 'past' : (isAvail ? 'available' : '');
+    daysHtml += `<button class="cal-widget__day ${cls}" ${isPast?'disabled':''} onclick="selectCalDay(this,${d})">${d}</button>`;
+  }
+  
+  const times = ['09:00','10:30','11:00','14:00','15:30','16:00','17:30'];
+  const timesHtml = times.map(t => `<button class="cal-widget__time" onclick="selectCalTime(this,'${t}')">${t}</button>`).join('');
+  
+  return `<div class="cal-widget">
+    <div class="cal-widget__title">📅 Selecciona fecha y hora</div>
+    <div class="cal-widget__nav"><span>${monthNames[month]} ${year}</span></div>
+    <div class="cal-widget__days">${daysHtml}</div>
+    <div class="cal-widget__times" id="calTimes" style="display:none">${timesHtml}</div>
+    <button class="cal-widget__confirm" id="calConfirm" style="display:none" onclick="confirmCalendar()">✓ Confirmar Agendamiento</button>
+    <div style="text-align:center;font-size:8px;color:rgba(255,255,255,0.2);margin-top:6px;letter-spacing:0.08em">CALENDARIO DEMO FICTICIO</div>
+  </div>`;
+}
+
+let selectedDay = null;
+let selectedTime = null;
+
+function selectCalDay(el, day) {
+  document.querySelectorAll('.cal-widget__day').forEach(d => d.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedDay = day;
+  document.getElementById('calTimes').style.display = 'flex';
+  if (selectedTime) document.getElementById('calConfirm').style.display = 'block';
+}
+
+function selectCalTime(el, time) {
+  document.querySelectorAll('.cal-widget__time').forEach(t => t.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedTime = time;
+  if (selectedDay) document.getElementById('calConfirm').style.display = 'block';
+}
+
+function confirmCalendar() {
+  const months = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const today = new Date();
+  const dateStr = `${selectedDay} de ${months[today.getMonth()]} a las ${selectedTime}`;
+  document.getElementById('msgInput').value = `Confirmo para el ${dateStr}`;
+  selectedDay = null; selectedTime = null;
+  sendMsg();
+}
+
+function downloadDoc(type, folio, empresa, itemsEncoded, total) {
+  const items = JSON.parse(decodeURIComponent(itemsEncoded));
+  const isQuote = type === 'cotizacion';
+  const title = isQuote ? 'COTIZACIÓN' : 'BOLETA DE VENTA';
+  const today = new Date().toLocaleDateString('es-CL');
+  
+  const itemRows = items.map(i => `<tr><td style="padding:8px 12px;border-bottom:1px solid #eee">${i.desc}</td><td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:right;font-weight:600">${i.precio}</td></tr>`).join('');
+  
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title} ${folio}</title>
+  <style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#1a1a1a;padding:40px;max-width:700px;margin:0 auto;position:relative}
+  .watermark{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);font-size:60px;color:rgba(0,0,0,0.04);font-weight:900;letter-spacing:10px;white-space:nowrap;pointer-events:none;z-index:0}
+  .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:30px;padding-bottom:20px;border-bottom:3px solid #00e5ff}
+  .logo{font-size:22px;font-weight:900;color:#1a1a1a}.logo span{color:#00e5ff}
+  .doc-info{text-align:right;font-size:12px;color:#666}
+  .doc-type{font-size:24px;font-weight:900;color:#00e5ff;margin-bottom:20px;letter-spacing:2px}
+  table{width:100%;border-collapse:collapse;margin:20px 0}th{background:#f8f9fa;padding:10px 12px;text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:1px;color:#666}
+  .total-row{background:#f0feff}
+  .total-row td{padding:12px;font-size:16px;font-weight:900;border-top:2px solid #00e5ff}
+  .footer{margin-top:40px;padding-top:20px;border-top:1px solid #eee;text-align:center;font-size:10px;color:#999}
+  .demo-badge{background:#fff3cd;border:2px dashed #ffc107;border-radius:8px;padding:12px;text-align:center;margin:30px 0;font-size:12px;color:#856404;font-weight:600}
+  @media print{.no-print{display:none}.watermark{position:fixed}}
+  </style></head><body>
+  <div class="watermark">DOCUMENTO DEMO</div>
+  <div class="header">
+    <div><div class="logo">Agencia<span>Comercial</span>.ai</div><div style="font-size:11px;color:#999;margin-top:4px">${empresa}</div></div>
+    <div class="doc-info"><strong>${title}</strong><br>Folio: ${folio}<br>Fecha: ${today}<br>Válido por: 15 días</div>
+  </div>
+  <div class="demo-badge">⚠️ DOCUMENTO DEMO FICTICIO — Generado automáticamente por el asistente IA de agenciacomercial.ai</div>
+  <table><thead><tr><th>Descripción</th><th style="text-align:right">Valor</th></tr></thead><tbody>${itemRows}
+  <tr class="total-row"><td style="padding:12px">TOTAL</td><td style="padding:12px;text-align:right;color:#00838f">${total}</td></tr></tbody></table>
+  <div style="margin:20px 0;font-size:12px;color:#666"><strong>Condiciones:</strong><br>• Precios incluyen IVA • Pago: transferencia, tarjeta crédito/débito • Validez: 15 días desde emisión</div>
+  <div style="margin:20px 0;padding:20px;background:#f8f9fa;border-radius:8px;font-size:11px;color:#666"><strong>Datos de contacto:</strong><br>${empresa}<br>contacto@empresa-demo.cl | +56 9 XXXX XXXX<br>Santiago, Chile</div>
+  <button onclick="window.print()" class="no-print" style="position:fixed;bottom:20px;right:20px;padding:12px 24px;background:#00e5ff;color:#000;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.15)">🖨️ Imprimir / Guardar PDF</button>
+  <div class="footer">Este es un documento demo generado por IA — agenciacomercial.ai<br>No tiene validez comercial ni tributaria</div>
+  </body></html>`;
+  
+  const w = window.open('', '_blank');
+  w.document.write(html);
+  w.document.close();
 }
 
 function showTyping() {
@@ -261,7 +705,7 @@ function hideTyping() {
   if (t) t.remove();
 }
 
-function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>'); }
 
 async function sendMsg() {
   const input = document.getElementById('msgInput');
@@ -297,3 +741,4 @@ async function sendMsg() {
 </script>
 </body>
 </html>
+
