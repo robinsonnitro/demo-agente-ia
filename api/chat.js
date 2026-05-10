@@ -51,8 +51,8 @@ export default async function handler(req, res) {
       systemPrompt +
       "\n\nResponde siempre en español chileno, breve, natural y útil.";
 
-    // Usar gemini-1.5-flash: mayor cuota en free tier que gemini-2.0-flash
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`;
+    // gemini-2.5-flash-preview-04-17: modelo disponible en v1beta con buena cuota free
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-04-17:generateContent?key=${GEMINI_KEY}`;
 
     const response = await callGeminiWithRetry(geminiUrl, {
       system_instruction: {
