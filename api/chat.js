@@ -39,7 +39,7 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: "GEMINI_API_KEY not configured" });
     }
 
-    // Limitar historial a los últimos 10 mensajes para no agotar tokens
+    // Limitar historial a los últimos 10 mensajes
     const recentMessages = messages.slice(-10);
 
     const contents = recentMessages.map((msg) => ({
@@ -51,8 +51,8 @@ export default async function handler(req, res) {
       systemPrompt +
       "\n\nResponde siempre en español chileno, breve, natural y útil.";
 
-    // Usar API v1 (estable) con gemini-2.0-flash
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`;
+    // v1beta + gemini-2.0-flash: soporta system_instruction y tiene buena cuota free
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`;
 
     const response = await callGeminiWithRetry(geminiUrl, {
       system_instruction: {
