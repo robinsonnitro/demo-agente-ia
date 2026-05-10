@@ -228,6 +228,12 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);height
 .cal-widget__time:hover,.cal-widget__time.selected{border-color:var(--wa-green-light);color:var(--wa-green-light);background:rgba(0,168,132,0.1)}
 .cal-widget__confirm{width:100%;padding:9px;margin-top:10px;border-radius:8px;border:none;background:var(--wa-green);color:#fff;font-size:11px;font-weight:700;font-family:'Outfit';cursor:pointer;transition:all .3s}
 .cal-widget__confirm:hover{background:#00c49a}
+.cal-widget__day.checkin{background:var(--wa-green)!important;color:#fff!important;font-weight:700;border-radius:8px 0 0 8px}
+.cal-widget__day.checkout{background:var(--wa-green)!important;color:#fff!important;font-weight:700;border-radius:0 8px 8px 0}
+.cal-widget__day.in-range{background:rgba(0,168,132,0.18);color:var(--wa-green-light);border-radius:0;font-weight:600}
+.cal-widget__day.checkin.checkout{border-radius:8px}
+.cal-nights-badge{text-align:center;font-size:11px;color:var(--wa-green-light);background:rgba(0,168,132,0.1);border:1px solid rgba(0,168,132,0.2);border-radius:8px;padding:7px 10px;margin-top:8px;font-weight:600}
+.cal-widget__hint{font-size:9px;color:var(--wa-text-time);text-align:center;margin-bottom:4px;letter-spacing:0.02em}
 </style>
 </head>
 <body>
@@ -567,52 +573,155 @@ function renderDocCard(type, data) {
   </div>`;
 }
 
+
+// ─── CALENDAR STATE ────────────────────────────────────────
+let calMonth = new Date().getMonth();
+let calYear  = new Date().getFullYear();
+let calCheckIn  = null;
+let calCheckOut = null;
+let selectedDay  = null;
+let selectedTime = null;
+
+const CAL_MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const CAL_DAYS   = ['Lu','Ma','Mi','Ju','Vi','Sá','Do'];
+
 function renderCalendar() {
-  const today = new Date();
-  const month = today.getMonth(); const year = today.getFullYear();
-  const monthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-  const dayLabels = ['Lu','Ma','Mi','Ju','Vi','Sá','Do'];
+  calMonth = new Date().getMonth();
+  calYear  = new Date().getFullYear();
+  calCheckIn = null; calCheckOut = null;
+  selectedDay = null; selectedTime = null;
+  const isHotel = current && current.id === 'hotel';
+  return isHotel ? buildHotelCalendar() : buildApptCalendar();
+}
+
+function buildCalGrid(month, year, isHotel) {
+  const todayTs = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()).getTime();
   const firstDay = (new Date(year, month, 1).getDay() + 6) % 7;
   const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const todayDate = today.getDate();
-  let daysHtml = dayLabels.map(d => `<div class="cal-widget__day-label">${d}</div>`).join('');
-  for (let i = 0; i < firstDay; i++) daysHtml += '<button class="cal-widget__day empty"></button>';
+  let html = CAL_DAYS.map(d => `<div class="cal-widget__day-label">${d}</div>`).join('');
+  for (let i = 0; i < firstDay; i++) html += '<button class="cal-widget__day empty"></button>';
   for (let d = 1; d <= daysInMonth; d++) {
-    const isPast = d < todayDate;
-    const isAvail = !isPast && Math.random() > 0.25;
-    const cls = isPast ? 'past' : (isAvail ? 'available' : '');
-    daysHtml += `<button class="cal-widget__day ${cls}" ${isPast?'disabled':''} onclick="selectCalDay(this,${d})">${d}</button>`;
+    const ts = new Date(year, month, d).getTime();
+    const isPast = ts < todayTs;
+    if (isHotel) {
+      let cls = isPast ? 'past' : 'available';
+      const isCI = calCheckIn  && calCheckIn.day===d  && calCheckIn.month===month  && calCheckIn.year===year;
+      const isCO = calCheckOut && calCheckOut.day===d && calCheckOut.month===month && calCheckOut.year===year;
+      if (isCI) cls += ' checkin';
+      if (isCO) cls += ' checkout';
+      if (!isCI && !isCO && calCheckIn && calCheckOut) {
+        const ciTs = new Date(calCheckIn.year,calCheckIn.month,calCheckIn.day).getTime();
+        const coTs = new Date(calCheckOut.year,calCheckOut.month,calCheckOut.day).getTime();
+        if (ts > ciTs && ts < coTs) cls += ' in-range';
+      }
+      html += `<button class="cal-widget__day ${cls}" ${isPast?'disabled':''} onclick="hotelCalDay(${d},${month},${year})">${d}</button>`;
+    } else {
+      const isAvail = !isPast && Math.random() > 0.25;
+      const cls = isPast ? 'past' : (isAvail ? 'available' : '');
+      html += `<button class="cal-widget__day ${cls}" ${isPast?'disabled':''} onclick="apptCalDay(this,${d})">${d}</button>`;
+    }
   }
+  return html;
+}
+
+function buildHotelCalendar() {
+  return `<div class="cal-widget" id="hotelCal">
+    <div class="cal-widget__title">📅 Selecciona fechas de estadía</div>
+    <div class="cal-widget__nav">
+      <button onclick="calNav(-1)">‹</button>
+      <span id="calMonthLabel">${CAL_MONTHS[calMonth]} ${calYear}</span>
+      <button onclick="calNav(1)">›</button>
+    </div>
+    <div class="cal-widget__hint">Toca llegada → luego salida</div>
+    <div class="cal-widget__days" id="calDaysGrid">${buildCalGrid(calMonth, calYear, true)}</div>
+    <div class="cal-nights-badge" id="calNights" style="display:none"></div>
+    <button class="cal-widget__confirm" id="calConfirm" style="display:none" onclick="confirmCalendar()">✓ Confirmar fechas</button>
+    <div style="text-align:center;font-size:8px;color:rgba(255,255,255,0.2);margin-top:6px;letter-spacing:0.08em">CALENDARIO DEMO FICTICIO</div>
+  </div>`;
+}
+
+function buildApptCalendar() {
   const times = ['09:00','10:30','11:00','14:00','15:30','16:00','17:30'];
   const timesHtml = times.map(t => `<button class="cal-widget__time" onclick="selectCalTime(this,'${t}')">${t}</button>`).join('');
   return `<div class="cal-widget">
     <div class="cal-widget__title">📅 Selecciona fecha y hora</div>
-    <div class="cal-widget__nav"><span>${monthNames[month]} ${year}</span></div>
-    <div class="cal-widget__days">${daysHtml}</div>
+    <div class="cal-widget__nav">
+      <button onclick="calNav(-1)">‹</button>
+      <span id="calMonthLabel">${CAL_MONTHS[calMonth]} ${calYear}</span>
+      <button onclick="calNav(1)">›</button>
+    </div>
+    <div class="cal-widget__days" id="calDaysGrid">${buildCalGrid(calMonth, calYear, false)}</div>
     <div class="cal-widget__times" id="calTimes" style="display:none">${timesHtml}</div>
     <button class="cal-widget__confirm" id="calConfirm" style="display:none" onclick="confirmCalendar()">✓ Confirmar Agendamiento</button>
     <div style="text-align:center;font-size:8px;color:rgba(255,255,255,0.2);margin-top:6px;letter-spacing:0.08em">CALENDARIO DEMO FICTICIO</div>
   </div>`;
 }
 
-let selectedDay = null; let selectedTime = null;
-function selectCalDay(el, day) {
+function calNav(dir) {
+  calMonth += dir;
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  if (calMonth < 0)  { calMonth = 11; calYear--; }
+  const isHotel = current && current.id === 'hotel';
+  const lbl  = document.getElementById('calMonthLabel');
+  const grid = document.getElementById('calDaysGrid');
+  if (lbl)  lbl.textContent = `${CAL_MONTHS[calMonth]} ${calYear}`;
+  if (grid) grid.innerHTML  = buildCalGrid(calMonth, calYear, isHotel);
+}
+
+function hotelCalDay(day, month, year) {
+  const todayTs = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()).getTime();
+  const clickTs = new Date(year, month, day).getTime();
+  if (clickTs < todayTs) return;
+  if (!calCheckIn || (calCheckIn && calCheckOut)) {
+    calCheckIn = {day, month, year}; calCheckOut = null;
+  } else {
+    const ciTs = new Date(calCheckIn.year, calCheckIn.month, calCheckIn.day).getTime();
+    if (clickTs <= ciTs) { calCheckIn = {day, month, year}; calCheckOut = null; }
+    else calCheckOut = {day, month, year};
+  }
+  const grid = document.getElementById('calDaysGrid');
+  if (grid) grid.innerHTML = buildCalGrid(calMonth, calYear, true);
+  const badge   = document.getElementById('calNights');
+  const confirm = document.getElementById('calConfirm');
+  if (calCheckIn && calCheckOut) {
+    const nights = Math.round((new Date(calCheckOut.year,calCheckOut.month,calCheckOut.day) - new Date(calCheckIn.year,calCheckIn.month,calCheckIn.day)) / 86400000);
+    if (badge)   { badge.textContent = `🌙 ${nights} noche${nights!==1?'s':''} seleccionada${nights!==1?'s':''}`; badge.style.display='block'; }
+    if (confirm) confirm.style.display = 'block';
+  } else {
+    if (badge)   { badge.textContent = '📍 Ahora selecciona la fecha de salida'; badge.style.display='block'; }
+    if (confirm) confirm.style.display = 'none';
+  }
+}
+
+function apptCalDay(el, day) {
   document.querySelectorAll('.cal-widget__day').forEach(d => d.classList.remove('selected'));
   el.classList.add('selected'); selectedDay = day;
-  document.getElementById('calTimes').style.display = 'flex';
-  if (selectedTime) document.getElementById('calConfirm').style.display = 'block';
+  const times = document.getElementById('calTimes');
+  if (times) times.style.display = 'flex';
+  if (selectedTime) { const c = document.getElementById('calConfirm'); if(c) c.style.display='block'; }
 }
+
 function selectCalTime(el, time) {
   document.querySelectorAll('.cal-widget__time').forEach(t => t.classList.remove('selected'));
   el.classList.add('selected'); selectedTime = time;
-  if (selectedDay) document.getElementById('calConfirm').style.display = 'block';
+  if (selectedDay) { const c = document.getElementById('calConfirm'); if(c) c.style.display='block'; }
 }
+
 function confirmCalendar() {
-  const months = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-  const today = new Date();
-  const dateStr = `${selectedDay} de ${months[today.getMonth()]} a las ${selectedTime}`;
-  document.getElementById('msgInput').value = `Confirmo para el ${dateStr}`;
-  selectedDay = null; selectedTime = null;
+  const isHotel = current && current.id === 'hotel';
+  const mn = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  if (isHotel && calCheckIn && calCheckOut) {
+    const nights = Math.round((new Date(calCheckOut.year,calCheckOut.month,calCheckOut.day) - new Date(calCheckIn.year,calCheckIn.month,calCheckIn.day)) / 86400000);
+    const sameMonth = calCheckIn.month===calCheckOut.month && calCheckIn.year===calCheckOut.year;
+    const dateStr = sameMonth
+      ? `del ${calCheckIn.day} al ${calCheckOut.day} de ${mn[calCheckIn.month]} de ${calCheckIn.year} (${nights} noche${nights!==1?'s':''})`
+      : `del ${calCheckIn.day} de ${mn[calCheckIn.month]} al ${calCheckOut.day} de ${mn[calCheckOut.month]} de ${calCheckOut.year} (${nights} noche${nights!==1?'s':''})`;
+    document.getElementById('msgInput').value = `Quiero reservar ${dateStr}`;
+    calCheckIn = null; calCheckOut = null;
+  } else if (!isHotel && selectedDay && selectedTime) {
+    document.getElementById('msgInput').value = `Confirmo para el ${selectedDay} de ${mn[calMonth]} a las ${selectedTime}`;
+    selectedDay = null; selectedTime = null;
+  }
   sendMsg();
 }
 
