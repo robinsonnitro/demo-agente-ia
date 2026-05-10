@@ -560,7 +560,7 @@ function addMessage(role, text) {
   }
 
   displayText = displayText.trim();
-  const textHtml = displayText ? `<div class="msg-text">${escHtml(displayText)}</div>` : '';
+  const textHtml = displayText ? `<div class="msg-text">${role === 'bot' ? renderMsgText(displayText) : escHtml(displayText)}</div>` : '';
   const timeLabel = `<div class="msg-time">${now}</div>`;
 
   row.innerHTML = `<div class="msg-bub ${role}">${textHtml}${extras}${timeLabel}</div>`;
@@ -781,6 +781,19 @@ function showTyping() {
   body.appendChild(row); body.scrollTop = body.scrollHeight;
 }
 function hideTyping() { const t = document.getElementById('typingRow'); if(t) t.remove(); }
+function renderMsgText(s) {
+  // Escape HTML first
+  s = s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  // Bold **text**
+  s = s.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  // Bullet lines: lines starting with * or - followed by space
+  s = s.replace(/(^|\n)[*\-]\s+(.+)/g,'$1<span style="display:block;padding-left:10px">• $2</span>');
+  // Numbered list: lines starting with 1. 2. etc
+  s = s.replace(/(^|\n)(\d+)\.\s+(.+)/g,'$1<span style="display:block;padding-left:10px">$2. $3</span>');
+  // Line breaks
+  s = s.replace(/\n/g,'<br>');
+  return s;
+}
 function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>'); }
 
 async function sendMsg() {
